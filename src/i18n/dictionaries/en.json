@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "title": "Thai Student Association in Kuwait",
+    "description": "The official website of the Thai Student Association in Kuwait"
+  },
+  "brand": {
+    "name": "Thai Student Association in Kuwait",
+    "tagline": "The voice of Thai students in the State of Kuwait",
+    "shortLabel": "THAI STUDENT ASSOCIATION · KUWAIT"
+  },
+  "nav": {
+    "home": "Home",
+    "students": "Students",
+    "activities": "Activities",
+    "contact": "Contact"
+  },
+  "cta": {
+    "support": "Support Us",
+    "learn": "About Us",
+    "activities": "View Activities",
+    "contact": "Contact the Association"
+  },
+  "home": {
+    "kicker": "Welcome",
+    "title": "A Home for Thai Students in the State of Kuwait",
+    "lead": "The Thai Student Association in Kuwait is the home and connecting point for Thai students across the State of Kuwait. We support one another like family — in study, culture, and everyday life abroad.",
+    "heroBadge": "Thai students across Kuwait",
+    "aboutKicker": "About the Association",
+    "aboutTitle": "We Care for Each Other Like One Family",
+    "aboutText": "The association was founded to bridge Thai students, the Embassy, and the Thai community in Kuwait. We organise events, offer guidance, and support our members when they need it most — so everyone can graduate and live happily while studying abroad.",
+    "pillarsTitle": "What We Do",
+    "ctaBandTitle": "Support Thai Students in Kuwait",
+    "ctaBandText": "Your support helps the association host events and offer scholarships to its members. There is no obligation to donate — if you would like to support us, simply contact the association directly.",
+    "ctaBandBtn": "Contact to Support",
+    "statsTitle": "Our Impact",
+    "activitiesTitle": "Recent Activities"
+  },
+  "footer": {
+    "about": "Thai Student Association in the State of Kuwait — a home and support for Thai students abroad.",
+    "quick": "Quick Links",
+    "contactT": "Contact",
+    "follow": "Follow Us",
+    "location": "Kuwait City, Kuwait",
+    "rights": "All rights reserved",
+    "langNote": "Available in Thai · English · Arabic"
+  },
+  "students": {
+    "kicker": "Current Students",
+    "title": "Thai Students in the State of Kuwait",
+    "intro": "There are currently 58 Thai students (29 male · 29 female) enrolled across 4 institutions in the State of Kuwait.",
+    "totalLabel": "Total Thai students",
+    "maleLabel": "Male",
+    "femaleLabel": "Female",
+    "listTitle": "Institutions",
+    "studentsLabel": "Thai students",
+    "areaLabel": "Area",
+    "facultyTitle": "Faculties",
+    "websiteLabel": "Website",
+    "mapNote": "Map of Kuwait",
+    "gulf": "Arabian Gulf",
+    "comingSoon": "Per-institution data coming soon"
+  },
+  "activities": {
+    "kicker": "Activities",
+    "title": "Our Activities",
+    "intro": "Events and traditions the association organises each academic year. Browse by year.",
+    "noEvents": "No activities in the system yet — please add them in Google Sheet (tab: activities)",
+    "viewPhotos": "View Photos",
+    "audienceAll": "Everyone",
+    "audienceMale": "Male only",
+    "audienceFemale": "Female only"
+  },
+  "contact": {
+    "kicker": "Contact",
+    "title": "Contact Us",
+    "intro": "The association council and channels for contact and support.",
+    "councilTitle": "The Council",
+    "councilMainTitle": "Main Council",
+    "councilFemaleTitle": "Female Council",
+    "channelsTitle": "Contact Channels",
+    "supportTitle": "Support the Association",
+    "supportText": "There is no obligation to donate. If you would like to support scholarships or activities, please contact the association directly through the channels below.",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "facebook": "Facebook",
+    "instagram": "Instagram"
+  },
+  "common": {
+    "loading": "Loading...",
+    "language": "Language",
+    "readMore": "Read more"
+  }
+}

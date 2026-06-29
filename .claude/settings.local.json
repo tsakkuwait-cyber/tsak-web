@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"\\(Get-Item 'C:\\\\Users\\\\munar\\\\Munardil''s work\\\\TSAK web\\\\Thai Students Kuwait.html'\\).Length\")",
+      "PowerShell($path = 'C:\\\\Users\\\\munar\\\\Munardil''s work\\\\TSAK web\\\\Thai Students Kuwait.html'; $content = Get-Content $path -Raw; $marker = '<script type=\"__bundler/template\">'; $start = $content.IndexOf\\($marker\\); if \\($start -lt 0\\) { Write-Output \"Not found\" } else { $contentStart = $start + $marker.Length; $end = $content.IndexOf\\('</script>', $contentStart\\); $template = $content.Substring\\($contentStart, $end - $contentStart\\); $size = $template.Length; Write-Output \"Template size: $size chars\"; Write-Output \"First 2000 chars:\"; Write-Output $template.Substring\\(0, [Math]::Min\\(2000, $size\\)\\) })",
+      "PowerShell($path = 'C:\\\\Users\\\\munar\\\\Munardil''s work\\\\TSAK web\\\\Thai Students Kuwait.html'; $content = Get-Content $path -Raw; $marker = '<script type=\"__bundler/template\">'; $start = $content.IndexOf\\($marker\\); $contentStart = $start + $marker.Length; $end = $content.IndexOf\\('</script>', $contentStart\\); $rawJson = $content.Substring\\($contentStart, $end - $contentStart\\); $html = $rawJson | ConvertFrom-Json; $out = 'C:\\\\Users\\\\munar\\\\Munardil''s work\\\\TSAK web\\\\_design_source.html'; [System.IO.File]::WriteAllText\\($out, $html, [System.Text.Encoding]::UTF8\\); Write-Output \"Saved $\\($html.Length\\) chars to _design_source.html\")"
+    ]
+  }
+}

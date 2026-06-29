@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Global Styles — TSAK Web
+   - Palette + gradient อ้างอิงจาก design (Thai Students Kuwait.html)
+   - ใช้ logical properties เพื่อให้ layout flip LTR ↔ RTL อัตโนมัติ
+   ============================================================ */
+
+:root {
+  --color-navy: #0C3B45;
+  --color-brand: #10968D;
+}
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+body {
+  @apply text-ink antialiased;
+  font-family: var(--font-active), system-ui, sans-serif;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F2FAF9 45%, #E3F2F0 100%);
+  min-height: 100vh;
+}
+
+/* RTL helper: คอมโพเนนต์ที่ใส่คลาส .row-auto-flip จะกลับด้านอัตโนมัติ */
+html[dir="rtl"] .row-auto-flip { flex-direction: row-reverse; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #0C3B4540; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #0C3B4580; }
+
+/* ── Animations (สำหรับ MobileMenu) ──────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideInFromTop {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-in { animation-fill-mode: both; }
+.fade-in { animation-name: fadeIn; }
+.slide-in-from-top { animation-name: slideInFromTop; }
+.duration-200 { animation-duration: 200ms; }

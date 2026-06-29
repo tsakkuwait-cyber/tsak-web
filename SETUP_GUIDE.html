@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TSAK Web — คู่มือติดตั้ง Step-by-Step</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&family=Poppins:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #002B5B;
+    --navy-dark: #001B3A;
+    --blue: #1597D5;
+    --blue-light: #8FD3F4;
+    --blue-bg: #E6F2FB;
+    --bg-soft: #F4F9FD;
+    --bg-card: #ffffff;
+    --border: #DCE6F0;
+    --text: #16222E;
+    --text-muted: #58697B;
+    --success: #1A9D6E;
+    --warn: #C77700;
+    --danger: #C0392B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Prompt', sans-serif;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F4F9FD 45%, #E7F1FA 100%);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ──────────────────────────── */
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+  header.hero {
+    background: var(--navy);
+    color: #fff;
+    padding: 60px 0 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  header.hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(800px 400px at 80% -10%, rgba(21,151,213,.25), transparent 60%);
+  }
+  .hero-content { position: relative; }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 10px;
+    color: var(--blue-light); font-size: 13px;
+    font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  }
+  .kicker::before {
+    content: ''; width: 26px; height: 1px; background: var(--blue);
+  }
+  h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 800; line-height: 1.15;
+    margin-top: 18px; color: #fff;
+  }
+  .hero p {
+    font-size: 17px; color: #C2DDF0; margin-top: 18px; max-width: 56ch;
+  }
+  .hero-meta {
+    display: flex; gap: 24px; margin-top: 28px; flex-wrap: wrap;
+    font-size: 14px; color: #8FD3F4;
+  }
+  .hero-meta b { color: #fff; font-weight: 700; margin-inline-end: 4px; }
+
+  /* ── Progress overview ───────────────── */
+  .overview {
+    margin-top: -40px; position: relative; z-index: 5;
+    background: #fff; border: 1px solid var(--border); border-radius: 18px;
+    padding: 26px 28px; box-shadow: 0 8px 30px rgba(0,43,91,.08);
+  }
+  .overview h2 {
+    font-size: 14px; color: var(--text-muted); font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
+  }
+  .steps-toc { display: grid; gap: 6px; }
+  .steps-toc a {
+    display: flex; align-items: center; gap: 14px;
+    padding: 9px 12px; border-radius: 10px;
+    text-decoration: none; color: var(--text);
+    font-size: 15px; font-weight: 500;
+    transition: background .15s;
+  }
+  .steps-toc a:hover { background: var(--bg-soft); }
+  .steps-toc .num {
+    display: inline-grid; place-items: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--blue-bg); color: var(--navy);
+    font-weight: 700; font-size: 13px; flex: none;
+  }
+  .steps-toc .time {
+    margin-inline-start: auto; color: var(--text-muted); font-size: 13px;
+  }
+
+  /* ── Step sections ───────────────────── */
+  section.step {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 18px; padding: 36px; margin-top: 28px;
+    box-shadow: 0 2px 4px rgba(0,43,91,.04);
+  }
+  .step-head {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 8px;
+  }
+  .step-num {
+    display: grid; place-items: center;
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--navy); color: #fff;
+    font-weight: 800; font-size: 18px; flex: none;
+  }
+  .step-head h2 {
+    font-size: 26px; font-weight: 800; color: var(--navy);
+    line-height: 1.2;
+  }
+  .step-head .duration {
+    margin-inline-start: auto;
+    background: var(--blue-bg); color: var(--navy);
+    padding: 6px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+  }
+  .step-sub { color: var(--text-muted); font-size: 15px; margin-bottom: 24px; }
+
+  h3 {
+    font-size: 18px; font-weight: 700; color: var(--navy);
+    margin-top: 28px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h3 .badge {
+    background: var(--blue); color: #fff;
+    width: 24px; height: 24px; border-radius: 7px;
+    display: inline-grid; place-items: center;
+    font-size: 12px; font-weight: 700;
+  }
+  p { margin-bottom: 10px; color: var(--text); }
+  p.tip {
+    background: #FFF8E1; border-inline-start: 4px solid var(--warn);
+    padding: 12px 16px; border-radius: 8px; margin: 12px 0;
+    font-size: 14.5px; color: #6A4500;
+  }
+  p.success {
+    background: #E8F7F0; border-inline-start: 4px solid var(--success);
+    padding: 12px 16px; border-radius: 8px; margin: 12px 0;
+    font-size: 14.5px; color: #06432B;
+  }
+  p.warn {
+    background: #FDECEA; border-inline-start: 4px solid var(--danger);
+    padding: 12px 16px; border-radius: 8px; margin: 12px 0;
+    font-size: 14.5px; color: #6A1B14; font-weight: 500;
+  }
+
+  ol, ul { margin: 8px 0 14px 1.5em; }
+  li { margin: 6px 0; }
+  li code { font-size: 13px; }
+
+  /* ── Code blocks ─────────────────────── */
+  pre {
+    background: var(--navy-dark); color: #C2DDF0;
+    border-radius: 12px; padding: 16px 20px;
+    overflow-x: auto; margin: 12px 0 18px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 13.5px; line-height: 1.7;
+    position: relative;
+  }
+  pre .lang {
+    position: absolute; top: 8px; inset-inline-end: 12px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+    color: var(--blue-light); text-transform: uppercase;
+  }
+  code {
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    background: var(--bg-soft); color: var(--navy);
+    padding: 2px 7px; border-radius: 5px;
+    font-size: 13px; font-weight: 600;
+  }
+  pre code { background: none; padding: 0; color: inherit; font-weight: 400; }
+
+  kbd {
+    background: #fff; border: 1px solid var(--border); border-bottom-width: 2px;
+    border-radius: 6px; padding: 1px 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+    color: var(--navy); font-weight: 700;
+  }
+
+  /* ── Tables ──────────────────────────── */
+  .table-wrap { overflow-x: auto; margin: 14px 0; }
+  table {
+    width: 100%; border-collapse: collapse;
+    border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+    font-size: 14px;
+  }
+  th {
+    background: var(--blue-bg); color: var(--navy);
+    text-align: start; padding: 10px 14px; font-weight: 700;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 9px 14px; border-bottom: 1px solid var(--border);
+    color: var(--text); vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #FAFCFE; }
+
+  /* ── Screenshot placeholders ─────────── */
+  .shot {
+    background: var(--bg-soft); border: 1px dashed var(--border);
+    border-radius: 12px; padding: 28px;
+    text-align: center; color: var(--text-muted);
+    font-size: 13px; margin: 12px 0;
+    font-style: italic;
+  }
+  .shot::before {
+    content: '🖼  '; font-style: normal; margin-inline-end: 4px;
+  }
+
+  /* ── Final ───────────────────────────── */
+  .done {
+    background: linear-gradient(135deg, var(--navy) 0%, #003F7E 100%);
+    color: #fff; border-radius: 22px; padding: 50px 40px;
+    text-align: center; margin: 40px 0 60px;
+    box-shadow: 0 10px 40px rgba(0,43,91,.25);
+  }
+  .done h2 {
+    font-size: 32px; font-weight: 800; color: #fff;
+    margin-bottom: 14px;
+  }
+  .done p { color: #C2DDF0; font-size: 16px; max-width: 50ch; margin: 0 auto 20px; }
+  .done .cheat {
+    background: rgba(255,255,255,.08); border: 1px solid rgba(143,211,244,.2);
+    border-radius: 12px; padding: 20px; margin-top: 26px;
+    text-align: start;
+  }
+  .done .cheat h3 {
+    color: var(--blue-light); font-size: 13px; letter-spacing: .08em;
+    text-transform: uppercase; margin: 0 0 12px;
+  }
+  .done .cheat code {
+    background: rgba(0,0,0,.25); color: #8FD3F4;
+    border: 1px solid rgba(143,211,244,.15);
+  }
+  .done .cheat-row {
+    display: flex; gap: 16px; padding: 8px 0;
+    border-bottom: 1px solid rgba(143,211,244,.1);
+    font-size: 14px;
+  }
+  .done .cheat-row:last-child { border-bottom: none; }
+  .done .cheat-row .label { flex: 1; color: #C2DDF0; }
+  .done .cheat-row .cmd { flex: 1; text-align: end; font-family: 'JetBrains Mono', monospace; }
+
+  footer.bottom {
+    background: var(--navy-dark); color: #AFC6DC;
+    padding: 30px 0; text-align: center;
+    font-size: 14px;
+  }
+  footer.bottom a { color: var(--blue-light); text-decoration: none; }
+
+  /* ── Print-friendly ──────────────────── */
+  @media print {
+    body { background: #fff; }
+    header.hero, .done, footer.bottom { background: #fff !important; color: #000 !important; }
+    header.hero h1, .done h2 { color: var(--navy) !important; }
+    section.step { break-inside: avoid; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ HERO ═══════════════════════════════════════ -->
+<header class="hero">
+  <div class="wrap hero-content">
+    <span class="kicker">TSAK Web · คู่มือติดตั้ง</span>
+    <h1>เริ่มจากศูนย์สู่เว็บออนไลน์<br>ใน 1–2 ชั่วโมง</h1>
+    <p>คู่มือ step-by-step สำหรับติดตั้งเว็บไซต์ชมรมนักศึกษาไทยในคูเวต ตั้งแต่ลง Node.js จนเว็บขึ้นออนไลน์บน Vercel — ฟรี 100%</p>
+    <div class="hero-meta">
+      <span><b>เวลาทั้งหมด:</b> ≈ 70 นาที</span>
+      <span><b>ค่าใช้จ่าย:</b> 0 บาท</span>
+      <span><b>ความรู้พื้นฐาน:</b> ไม่ต้อง</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ═══════════════════ TABLE OF CONTENTS ═══════════════════ -->
+  <div class="overview">
+    <h2>ภาพรวม 7 ขั้นตอน</h2>
+    <div class="steps-toc">
+      <a href="#step-1"><span class="num">1</span>ติดตั้งเครื่องมือบนเครื่อง<span class="time">15 นาที</span></a>
+      <a href="#step-2"><span class="num">2</span>รันโปรเจกต์ครั้งแรก (เห็นเว็บแล้ว!)<span class="time">5 นาที</span></a>
+      <a href="#step-3"><span class="num">3</span>สร้าง Google Sheet ฐานข้อมูล<span class="time">10 นาที</span></a>
+      <a href="#step-4"><span class="num">4</span>สร้าง Service Account (ส่วนยากสุด)<span class="time">15 นาที</span></a>
+      <a href="#step-5"><span class="num">5</span>เชื่อม Sheet เข้ากับเว็บ<span class="time">5 นาที</span></a>
+      <a href="#step-6"><span class="num">6</span>ขึ้นโค้ดบน GitHub<span class="time">10 นาที</span></a>
+      <a href="#step-7"><span class="num">7</span>Deploy บน Vercel (ฟรี)<span class="time">10 นาที</span></a>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ STEP 1 ═══════════════════ -->
+  <section class="step" id="step-1">
+    <div class="step-head">
+      <div class="step-num">1</div>
+      <h2>ติดตั้งเครื่องมือบนเครื่อง</h2>
+      <span class="duration">15 นาที</span>
+    </div>
+    <p class="step-sub">ติดตั้ง 3 ตัว: <b>Node.js</b> (จำเป็น), <b>VS Code</b> (แก้โค้ด), <b>Git</b> (สำหรับ deploy)</p>
+
+    <h3><span class="badge">A</span>Node.js (จำเป็น)</h3>
+    <ol>
+      <li>เปิด <a href="https://nodejs.org/" target="_blank">nodejs.org</a></li>
+      <li>กดโหลด <b>LTS</b> (เลขเวอร์ชั่น 20 หรือ 22)</li>
+      <li>เปิดไฟล์ <code>.msi</code> → Next → Next → Install (default ทั้งหมด)</li>
+      <li>เช็คว่าติดตั้งสำเร็จ — เปิด PowerShell แล้วพิมพ์:</li>
+    </ol>
+    <pre><span class="lang">powershell</span><code>node --version
+npm --version</code></pre>
+    <p class="success">ถ้าขึ้นเลขเวอร์ชั่น = ติดตั้งสำเร็จ ✅</p>
+
+    <h3><span class="badge">B</span>VS Code (แนะนำ)</h3>
+    <ol>
+      <li>โหลดจาก <a href="https://code.visualstudio.com/" target="_blank">code.visualstudio.com</a></li>
+      <li>ติดตั้งตาม default</li>
+    </ol>
+
+    <h3><span class="badge">C</span>Git (จำเป็นสำหรับ deploy)</h3>
+    <ol>
+      <li>โหลดจาก <a href="https://git-scm.com/download/win" target="_blank">git-scm.com/download/win</a></li>
+      <li>ติดตั้งตาม default ทั้งหมด — ห้ามเปลี่ยน option</li>
+    </ol>
+  </section>
+
+  <!-- ═══════════════════ STEP 2 ═══════════════════ -->
+  <section class="step" id="step-2">
+    <div class="step-head">
+      <div class="step-num">2</div>
+      <h2>รันโปรเจกต์ครั้งแรก 🎉</h2>
+      <span class="duration">5 นาที</span>
+    </div>
+    <p class="step-sub">ทำขั้นนี้จบ จะเห็นเว็บรันบนเครื่องคุณแล้ว แม้ยังไม่เชื่อม Google Sheet</p>
+
+    <h3><span class="badge">A</span>เปิดโปรเจกต์ใน VS Code</h3>
+    <ol>
+      <li>เปิด VS Code</li>
+      <li>เมนู <b>File → Open Folder...</b></li>
+      <li>เลือก <code>C:\Users\munar\Munardil's work\TSAK web</code></li>
+    </ol>
+
+    <h3><span class="badge">B</span>เปิด Terminal ใน VS Code</h3>
+    <p>กด <kbd>Ctrl</kbd> + <kbd>`</kbd> (backtick ใต้ Esc) หรือเมนู <b>Terminal → New Terminal</b></p>
+
+    <h3><span class="badge">C</span>ติดตั้ง dependencies (รอ 1–2 นาที)</h3>
+    <pre><span class="lang">powershell</span><code>npm install</code></pre>
+    <p>จะเห็นบรรทัดวิ่งๆ มากมาย ปล่อยรอจนกว่าจะนิ่ง ถ้ามีคำเตือนสีเหลือง — ไม่เป็นไร</p>
+
+    <h3><span class="badge">D</span>รันเว็บ</h3>
+    <pre><span class="lang">powershell</span><code>npm run dev</code></pre>
+    <p>จะเห็นข้อความประมาณนี้:</p>
+    <pre><code>▲ Next.js 14.2.x
+- Local:        http://localhost:3000
+✓ Ready in 2.1s</code></pre>
+
+    <h3><span class="badge">E</span>เปิดเว็บในเบราว์เซอร์</h3>
+    <p>เข้า <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></p>
+    <ul>
+      <li>จะเห็น Hero สี navy + ปุ่ม Support สีฟ้า</li>
+      <li>มุมขวาบนมีปุ่มสลับภาษา TH / EN / AR</li>
+      <li>กด <b>AR</b> → ข้อความและ layout กลับเป็น RTL ทันที 🎯</li>
+    </ul>
+    <p class="tip">สถิติและกิจกรรมจะยังว่าง เพราะยังไม่เชื่อม Google Sheet (ทำขั้น 3 ต่อ)</p>
+    <p class="tip">หยุดเซิร์ฟเวอร์: กด <kbd>Ctrl</kbd> + <kbd>C</kbd> ใน terminal</p>
+  </section>
+
+  <!-- ═══════════════════ STEP 3 ═══════════════════ -->
+  <section class="step" id="step-3">
+    <div class="step-head">
+      <div class="step-num">3</div>
+      <h2>สร้าง Google Sheet ฐานข้อมูล</h2>
+      <span class="duration">10 นาที</span>
+    </div>
+    <p class="step-sub"><b>สำคัญ:</b> ล็อกอินด้วย <b>อีเมลกลางของชมรม</b> ที่จะส่งต่อให้รุ่นน้อง</p>
+
+    <h3><span class="badge">A</span>สร้าง Sheet ใหม่</h3>
+    <ol>
+      <li>เข้า <a href="https://sheets.google.com/" target="_blank">sheets.google.com</a></li>
+      <li>กด <b>+ Blank</b></li>
+      <li>เปลี่ยนชื่อมุมซ้ายบนเป็น <code>TSAK Database</code></li>
+    </ol>
+
+    <h3><span class="badge">B</span>สร้าง Tab "stats"</h3>
+    <p>มุมล่างซ้าย เห็น tab "Sheet1" → ดับเบิลคลิก → เปลี่ยนชื่อเป็น <code>stats</code> แล้วกรอกข้อมูลตามนี้:</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>A · key</th><th>B · value</th><th>C · label_th</th><th>D · label_en</th><th>E · label_ar</th></tr>
+        <tr><td>members</td><td>58</td><td>นักศึกษาไทย</td><td>Thai Students</td><td>طالب تايلاندي</td></tr>
+        <tr><td>institutions</td><td>4</td><td>สถาบันการศึกษา</td><td>Institutions</td><td>مؤسسة تعليمية</td></tr>
+        <tr><td>years</td><td>15</td><td>ปีที่ดำเนินงาน</td><td>Years Active</td><td>عاماً من العمل</td></tr>
+        <tr><td>events</td><td>40+</td><td>กิจกรรมต่อปี</td><td>Events / Year</td><td>فعالية سنوياً</td></tr>
+      </table>
+    </div>
+    <p class="warn">แถวที่ 1 คือ header — ห้ามเว้น ห้ามเปลี่ยนตัวสะกด (ใช้ตัวพิมพ์เล็ก)</p>
+
+    <h3><span class="badge">C</span>สร้าง Tab "activities"</h3>
+    <p>มุมล่างกด <b>+</b> เพื่อสร้าง tab ใหม่ ตั้งชื่อ <code>activities</code> แล้วใส่ header แถว 1 ตามนี้ (copy แล้ว paste 1 ที):</p>
+    <pre><code>id | date | image_url | published | title_th | title_en | title_ar | desc_th | desc_en | desc_ar | location_th | location_en | location_ar</code></pre>
+    <p>ตัวอย่างแถวที่ 2:</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>id</th><th>date</th><th>image_url</th><th>published</th><th>title_th</th><th>title_en</th><th>title_ar</th></tr>
+        <tr><td>1</td><td>2026-01-15</td><td>(ว่างได้)</td><td>TRUE</td><td>งานลอยกระทง</td><td>Loy Krathong Festival</td><td>مهرجان لوي كراثونغ</td></tr>
+      </table>
+    </div>
+
+    <h3><span class="badge">D</span>คัดลอก Sheet ID เก็บไว้</h3>
+    <p>ดู URL ตอนนี้ จะเป็นแบบนี้:</p>
+    <pre><code>https://docs.google.com/spreadsheets/d/<b>1AbCdEfGhIjKlMn123456789</b>/edit#gid=0
+                                       └──────── ส่วนนี้คือ Sheet ID ────────┘</code></pre>
+    <p>copy ส่วน Sheet ID เก็บไว้ก่อน เดี๋ยวใช้ในขั้น 5</p>
+  </section>
+
+  <!-- ═══════════════════ STEP 4 ═══════════════════ -->
+  <section class="step" id="step-4">
+    <div class="step-head">
+      <div class="step-num">4</div>
+      <h2>สร้าง Service Account (ส่วนยากสุด)</h2>
+      <span class="duration">15 นาที</span>
+    </div>
+    <p class="step-sub">Service Account = "บัญชีหุ่นยนต์" ที่ให้เว็บอ่าน Sheet ได้ โดยไม่ต้องเปิด Sheet ให้ public</p>
+
+    <h3><span class="badge">A</span>สร้าง Google Cloud Project</h3>
+    <ol>
+      <li>เข้า <a href="https://console.cloud.google.com/" target="_blank">console.cloud.google.com</a> (ล็อกอินอีเมลเดียวกับ Sheet)</li>
+      <li>ครั้งแรกจะมี popup ให้ยอมรับ Terms → กด <b>Agree and Continue</b></li>
+      <li>มุมบนซ้าย กดที่ชื่อ project (หรือ "Select a project") → <b>NEW PROJECT</b></li>
+      <li>กรอก:
+        <ul>
+          <li>Project name: <code>TSAK Web</code></li>
+          <li>Location: ปล่อย default</li>
+        </ul>
+      </li>
+      <li>กด <b>CREATE</b> → รอ 10 วินาที</li>
+      <li>รอจน notification ขวาบนแจ้ง "Project created" → กด <b>SELECT PROJECT</b></li>
+    </ol>
+
+    <h3><span class="badge">B</span>เปิดใช้งาน Google Sheets API</h3>
+    <ol>
+      <li>ในแถบ search ด้านบน พิมพ์: <code>Google Sheets API</code></li>
+      <li>คลิกผลลัพธ์แรก</li>
+      <li>กดปุ่มน้ำเงิน <b>ENABLE</b> → รอ 10 วินาที</li>
+    </ol>
+
+    <h3><span class="badge">C</span>สร้าง Service Account</h3>
+    <ol>
+      <li>เมนูซ้ายบน (☰) → <b>APIs & Services → Credentials</b></li>
+      <li>ด้านบน กด <b>+ CREATE CREDENTIALS → Service account</b></li>
+      <li>กรอก:
+        <ul>
+          <li>Service account name: <code>tsak-sheet-reader</code></li>
+          <li>(อื่นๆ ปล่อย default)</li>
+        </ul>
+      </li>
+      <li>กด <b>CREATE AND CONTINUE</b></li>
+      <li>ข้าม 2 ช่องถัดไป (Role และ Grant access) → กด <b>DONE</b></li>
+    </ol>
+
+    <h3><span class="badge">D</span>ดาวน์โหลด Key (JSON)</h3>
+    <ol>
+      <li>ในหน้า Credentials จะเห็น service account ที่เพิ่งสร้าง → <b>คลิกที่ชื่อมัน</b></li>
+      <li>แท็บด้านบนกด <b>KEYS</b></li>
+      <li>กด <b>ADD KEY → Create new key</b></li>
+      <li>เลือก <b>JSON</b> → กด <b>CREATE</b></li>
+      <li>ไฟล์ <code>.json</code> จะถูกดาวน์โหลดอัตโนมัติ</li>
+    </ol>
+    <p class="warn">เก็บไฟล์ JSON นี้ให้ดี ห้ามทำหาย ห้าม commit ขึ้น git ห้ามแชร์ใคร — เพราะเป็น "กุญแจ" เข้าระบบ</p>
+
+    <h3><span class="badge">E</span>Share Sheet ให้ Service Account</h3>
+    <ol>
+      <li>เปิดไฟล์ JSON ด้วย Notepad</li>
+      <li>หาบรรทัด <code>"client_email": "tsak-sheet-reader@...iam.gserviceaccount.com"</code> → <b>copy email นี้</b></li>
+      <li>กลับไปที่ Google Sheet ที่สร้างไว้ขั้น 3</li>
+      <li>กดปุ่ม <b>Share</b> มุมขวาบน</li>
+      <li>วาง email ที่ copy → เปลี่ยนสิทธิ์เป็น <b>Viewer</b> → กด <b>Send</b></li>
+      <li>ถ้ามี popup ถามว่าจะส่ง email — กด "Share anyway"</li>
+    </ol>
+  </section>
+
+  <!-- ═══════════════════ STEP 5 ═══════════════════ -->
+  <section class="step" id="step-5">
+    <div class="step-head">
+      <div class="step-num">5</div>
+      <h2>เชื่อม Sheet เข้ากับเว็บ</h2>
+      <span class="duration">5 นาที</span>
+    </div>
+
+    <h3><span class="badge">A</span>สร้างไฟล์ .env.local</h3>
+    <ol>
+      <li>ใน VS Code คลิกขวาที่พื้นที่ว่างใน File Explorer ซ้ายมือ → <b>New File</b></li>
+      <li>ตั้งชื่อ: <code>.env.local</code> (มีจุดข้างหน้าด้วย)</li>
+    </ol>
+
+    <h3><span class="badge">B</span>กรอกค่า 3 ตัว</h3>
+    <p>เปิดไฟล์ JSON ที่ดาวน์โหลด แล้ว copy ค่ามาใส่:</p>
+    <pre><span class="lang">.env.local</span><code>GOOGLE_CLIENT_EMAIL="tsak-sheet-reader@xxxxx.iam.gserviceaccount.com"
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEv...ยาวมาก...\n-----END PRIVATE KEY-----\n"
+GOOGLE_SHEET_ID="1AbCdEfGhIjKlMn123456789"</code></pre>
+    <p class="tip"><b>จุดสำคัญ private_key:</b> ใน JSON จะเป็น <code>"private_key": "-----BEGIN...\n...\n-----END...\n"</code> — copy ทั้งก้อน (รวม <code>\n</code> ทั้งหมด) วางใน quote <code>""</code> โค้ดจะแปลง <code>\n</code> เป็น newline จริงให้เอง</p>
+
+    <h3><span class="badge">C</span>รันเว็บใหม่</h3>
+    <p>ถ้า dev server ยังรันอยู่ → กด <kbd>Ctrl</kbd> + <kbd>C</kbd> → แล้ว:</p>
+    <pre><span class="lang">powershell</span><code>npm run dev</code></pre>
+    <p class="success">เปิด <a href="http://localhost:3000" target="_blank">localhost:3000</a> → ตัวเลขสถิติและการ์ดกิจกรรมจะขึ้นจาก Google Sheet แล้ว 🎉</p>
+
+    <h3><span class="badge">D</span>ทดสอบ live update</h3>
+    <p>แก้ตัวเลขใน Sheet (เช่น members จาก 58 → 100) → กลับมา refresh เว็บ → ตัวเลขเปลี่ยน</p>
+  </section>
+
+  <!-- ═══════════════════ STEP 6 ═══════════════════ -->
+  <section class="step" id="step-6">
+    <div class="step-head">
+      <div class="step-num">6</div>
+      <h2>ขึ้นโค้ดบน GitHub</h2>
+      <span class="duration">10 นาที</span>
+    </div>
+
+    <h3><span class="badge">A</span>สมัคร GitHub (ถ้ายังไม่มี)</h3>
+    <p>เข้า <a href="https://github.com/" target="_blank">github.com</a> → Sign up ด้วยอีเมลกลางชมรม</p>
+
+    <h3><span class="badge">B</span>สร้าง Repository</h3>
+    <ol>
+      <li>มุมบนขวา กด <b>+ → New repository</b></li>
+      <li>ตั้งชื่อ: <code>tsak-web</code></li>
+      <li>เลือก <b>Private</b></li>
+      <li><b>ห้ามเช็คอะไรเลย</b> (ไม่ต้อง README/gitignore เพราะเรามีแล้ว)</li>
+      <li>กด <b>Create repository</b></li>
+    </ol>
+    <p class="warn">ต้องเป็น Private — กัน Google credentials รั่ว แม้ว่า .gitignore จะกันไว้แล้ว</p>
+
+    <h3><span class="badge">C</span>Push โค้ดขึ้น GitHub</h3>
+    <p>ใน terminal ของ VS Code (โฟลเดอร์โปรเจกต์):</p>
+    <pre><span class="lang">powershell</span><code>git init
+git add .
+git commit -m "Initial commit: TSAK web base setup"
+git branch -M main
+git remote add origin https://github.com/&lt;your-username&gt;/tsak-web.git
+git push -u origin main</code></pre>
+    <p>(แก้ <code>&lt;your-username&gt;</code> เป็น username GitHub ของคุณ)</p>
+    <p class="success">ไฟล์ <code>.env.local</code> จะ<b>ไม่</b>ถูก push ขึ้น เพราะ <code>.gitignore</code> กันไว้แล้ว ✅</p>
+  </section>
+
+  <!-- ═══════════════════ STEP 7 ═══════════════════ -->
+  <section class="step" id="step-7">
+    <div class="step-head">
+      <div class="step-num">7</div>
+      <h2>Deploy บน Vercel (ฟรี)</h2>
+      <span class="duration">10 นาที</span>
+    </div>
+
+    <h3><span class="badge">A</span>สมัคร Vercel</h3>
+    <ol>
+      <li>เข้า <a href="https://vercel.com/signup" target="_blank">vercel.com/signup</a></li>
+      <li>เลือก <b>Continue with GitHub</b> → อนุญาตเชื่อมต่อ</li>
+    </ol>
+
+    <h3><span class="badge">B</span>Import Project</h3>
+    <ol>
+      <li>หน้า dashboard กด <b>Add New... → Project</b></li>
+      <li>เลือก repository <code>tsak-web</code> → <b>Import</b></li>
+      <li>หน้า config: ปล่อย default ทุกอย่าง (Vercel จะรู้ว่าเป็น Next.js เอง)</li>
+    </ol>
+
+    <h3><span class="badge">C</span>ใส่ Environment Variables</h3>
+    <p>เลื่อนลงไปที่ <b>Environment Variables</b> ใส่ 3 ตัว (จาก .env.local):</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Name</th><th>Value</th></tr>
+        <tr><td>GOOGLE_CLIENT_EMAIL</td><td>(copy จาก .env.local)</td></tr>
+        <tr><td>GOOGLE_PRIVATE_KEY</td><td>(copy จาก .env.local รวม \n)</td></tr>
+        <tr><td>GOOGLE_SHEET_ID</td><td>(copy จาก .env.local)</td></tr>
+      </table>
+    </div>
+
+    <h3><span class="badge">D</span>Deploy</h3>
+    <ol>
+      <li>กด <b>Deploy</b> → รอประมาณ 1–2 นาที</li>
+      <li>เสร็จแล้วจะเห็นหน้า "Congratulations!" + URL</li>
+      <li>ได้ลิงก์เว็บประมาณ <code>https://tsak-web.vercel.app</code> ✨</li>
+    </ol>
+  </section>
+
+  <!-- ═══════════════════ DONE ═══════════════════ -->
+  <div class="done">
+    <h2>🎊 จบแล้ว!</h2>
+    <p>ตอนนี้คุณมีเว็บออนไลน์ ฟรี 100% รุ่นน้องแก้ข้อมูลผ่าน Google Sheet ได้เลย และทุกครั้งที่ <code>git push</code> Vercel จะ deploy ใหม่อัตโนมัติ</p>
+
+    <div class="cheat">
+      <h3>คำสั่งที่ใช้บ่อย</h3>
+      <div class="cheat-row"><span class="label">รันเว็บบนเครื่อง</span><span class="cmd"><code>npm run dev</code></span></div>
+      <div class="cheat-row"><span class="label">หยุดเซิร์ฟเวอร์</span><span class="cmd"><kbd>Ctrl</kbd> + <kbd>C</kbd></span></div>
+      <div class="cheat-row"><span class="label">ส่งโค้ดอัปเดต</span><span class="cmd"><code>git add . && git commit -m "..." && git push</code></span></div>
+      <div class="cheat-row"><span class="label">ตรวจ TypeScript</span><span class="cmd"><code>npm run typecheck</code></span></div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="bottom">
+  © 2026 Thai Student Association in Kuwait · คู่มือนี้สำหรับส่งต่อรุ่นน้อง · ติดตรงไหน → กลับไปถามรุ่นพี่ที่ส่งต่อ
+</footer>
+
+</body>
+</html>

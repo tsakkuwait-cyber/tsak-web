@@ -1,0 +1,376 @@
+import "server-only";
+import { google, type sheets_v4 } from "googleapis";
+
+/**
+ * ============================================================
+ *  Google Sheets API Client — คลังข้อมูลหลังบ้านแบบ "ฟรี 100%"
+ * ============================================================
+ *
+ *  รุ่นพี่ตั้งใจให้รุ่นน้องที่ไม่ต้องเป็นโปรแกรมเมอร์ก็แก้ข้อมูล
+ *  ในเว็บได้เพียงเปิด Google Sheet แล้วพิมพ์ตามคอลัมน์ที่กำหนด
+ *
+ *  --------------------------------------------------------------
+ *  📋 โครงสร้าง Spreadsheet ที่แนะนำ (เพิ่ม sheet ได้ตามความต้องการ)
+ *  --------------------------------------------------------------
+ *
+ *  Sheet ที่ 1: "stats"  — ตัวเลขสถิติบนหน้าแรก
+ *    | key          | value | label_th       | label_en              | label_ar      |
+ *    |--------------|-------|----------------|------------------------|---------------|
+ *    | members      | 120   | สมาชิก          | Members                | الأعضاء       |
+ *    | activities   | 18    | กิจกรรมในปีนี้  | Activities this year   | أنشطة هذا العام |
+ *    | universities | 7     | มหาวิทยาลัย     | Universities           | الجامعات      |
+ *    | years        | 25    | ปีที่ก่อตั้ง   | Years since founding   | سنوات         |
+ *
+ *  Sheet ที่ 2: "activities" — รายการกิจกรรม (กรอกครบทั้ง 3 ภาษา)
+ *    | id  | date       | image_url           | published |
+ *    | title_th | title_en | title_ar |
+ *    | desc_th  | desc_en  | desc_ar  |
+ *    | location_th | location_en | location_ar |
+ *
+ *  Sheet ที่ 3: "members" — รายชื่อสมาชิก (ข้อมูลไม่ลับ)
+ *    | id  | name_th | name_en | name_ar | university | major | year | avatar_url |
+ *
+ *  Sheet ที่ 4: "committee" — คณะกรรมการชมรมประจำปี
+ *    | id | year | role_th | role_en | role_ar |
+ *    | name_th | name_en | name_ar | avatar_url | bio_th | bio_en | bio_ar |
+ *
+ *  💡 หลักการ Naming Convention
+ *     - ใช้ snake_case + suffix ภาษา: `<field>_<locale>`
+ *     - คอลัมน์แรกของทุก sheet ควรเป็น "id" (unique) เพื่อตั้ง key ตอน render
+ *     - คอลัมน์ "published" (TRUE/FALSE) เอาไว้ซ่อน/แสดงโดยไม่ต้องลบแถว
+ *     - แถวที่ 1 ของทุก sheet = header (ห้ามลบ ห้ามแก้ลำดับ)
+ *
+ *  --------------------------------------------------------------
+ *  🔐 ขั้นตอน Setup Service Account (ครั้งเดียว)
+ *  --------------------------------------------------------------
+ *  1) ไป https://console.cloud.google.com → สร้าง Project ใหม่
+ *  2) เมนู "APIs & Services" → เปิด "Google Sheets API"
+ *  3) "Credentials" → "Create Credentials" → "Service Account"
+ *  4) สร้าง JSON key → ดาวน์โหลด → คัดลอกค่าใส่ .env.local
+ *  5) เปิด Google Sheet → กด "Share" → ใส่ email ของ service account
+ *     (ต้องเป็น Viewer ขึ้นไป — ใช้ Editor ถ้าจะให้เว็บเขียนได้)
+ *  6) คัดลอก Sheet ID จาก URL ใส่ .env.local
+ * ============================================================
+ */
+
+// ---------------------------------------------------------------
+// 1) Singleton client — สร้างครั้งเดียวต่อ process
+// ---------------------------------------------------------------
+
+let cachedSheetsClient: sheets_v4.Sheets | null = null;
+
+function getSheetsClient(): sheets_v4.Sheets {
+  if (cachedSheetsClient) return cachedSheetsClient;
+
+  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+
+  if (!clientEmail || !privateKey) {
+    throw new Error(
+      "[google-sheets] ขาดค่า GOOGLE_CLIENT_EMAIL หรือ GOOGLE_PRIVATE_KEY ใน .env.local"
+    );
+  }
+
+  const auth = new google.auth.JWT({
+    email: clientEmail,
+    // Vercel/CI เก็บ env เป็น string จึงต้อง replace \n ให้กลับเป็น newline จริง
+    key: privateKey.replace(/\\n/g, "\n"),
+    scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+  });
+
+  cachedSheetsClient = google.sheets({ version: "v4", auth });
+  return cachedSheetsClient;
+}
+
+// ---------------------------------------------------------------
+// 2) Helper — แปลง rows (string[][]) → array of objects โดยใช้แถวแรกเป็น key
+// ---------------------------------------------------------------
+
+export type SheetRow = Record<string, string>;
+
+/**
+ * แปลง Google Drive URL ทุก format ให้เป็น URL ที่แสดงเป็นรูปได้จริง
+ * Google ปิด /uc?export=view ในปี 2024 → ต้องใช้ /thumbnail API แทน
+ *
+ * รองรับ input:
+ *   - https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+ *   - https://drive.google.com/open?id=FILE_ID
+ *   - https://drive.google.com/uc?export=view&id=FILE_ID
+ *   - https://drive.google.com/uc?id=FILE_ID
+ *
+ * → output: https://drive.google.com/thumbnail?id=FILE_ID&sz=w1600
+ *   (ใช้กับ <img> ตรงๆ ได้ — ไม่ต้อง login Drive)
+ */
+function normalizeImageUrl(url: string): string {
+  if (!url) return "";
+  const match = url.match(/(?:\/d\/|[?&]id=)([a-zA-Z0-9_-]{20,})/);
+  if (!match) return url;
+  return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600`;
+}
+
+function rowsToObjects(rows: string[][]): SheetRow[] {
+  if (!rows || rows.length < 2) return [];
+  const [header, ...body] = rows;
+  return body.map((row) => {
+    const obj: SheetRow = {};
+    header.forEach((key, idx) => {
+      obj[key] = (row[idx] ?? "").toString().trim();
+    });
+    return obj;
+  });
+}
+
+// ---------------------------------------------------------------
+// 3) Core: getSheet() — ดึงข้อมูลจาก sheet (tab) ที่ระบุ
+// ---------------------------------------------------------------
+
+/**
+ * ดึงข้อมูลจาก Google Sheet 1 tab แล้ว map เป็น array of objects
+ *
+ * @param sheetName ชื่อ tab (ตรงตามที่ตั้งใน Google Sheets — case sensitive)
+ * @param range    A1 notation (default = ทั้ง tab)
+ *
+ * @example
+ *   const activities = await getSheet("activities");
+ *   const stats = await getSheet("stats", "A1:E10");
+ */
+export async function getSheet(
+  sheetName: string,
+  range?: string
+): Promise<SheetRow[]> {
+  // ถ้ายังไม่ตั้งค่า .env.local → return array ว่างแบบเงียบๆ
+  // เพื่อให้ UI ยังขึ้นได้ตอน dev (ก่อนจะทำ Step 3-5 ใน setup guide)
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+
+  if (!spreadsheetId || !clientEmail || !privateKey) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[google-sheets] ยังไม่ได้ตั้งค่า env vars — sheet "${sheetName}" จะ return [] (เป็นเรื่องปกติถ้ายังไม่ทำ Step 3-5)`
+      );
+    }
+    return [];
+  }
+
+  const sheets = getSheetsClient();
+  const fullRange = range ? `${sheetName}!${range}` : sheetName;
+
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: fullRange,
+    });
+    return rowsToObjects((res.data.values as string[][]) ?? []);
+  } catch (err) {
+    console.error(`[google-sheets] อ่าน sheet "${sheetName}" ล้มเหลว:`, err);
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------
+// 4) Type-safe helpers ตาม schema ที่ออกแบบไว้
+// ---------------------------------------------------------------
+
+import type { Locale } from "@/i18n/config";
+
+export interface StatItem {
+  key: string;
+  /** ค่าตัวเลขจริง (สำหรับ logic เปรียบเทียบ) — NaN ถ้าแปลงไม่ได้ */
+  value: number;
+  /** ค่าที่จะแสดงผล (รองรับ "40+", "1,200", ฯลฯ) */
+  display: string;
+  label: string;
+}
+
+export interface ActivityItem {
+  id: string;
+  date: string;
+  /** URL รูปทั้งหมด (parse จาก image_url ที่คั่นด้วย comma หรือขึ้นบรรทัดใหม่) */
+  images: string[];
+  /** รูปแรก — ใช้แสดงเป็น thumbnail บนการ์ด */
+  imageUrl: string;
+  title: string;
+  description: string;
+  location: string;
+  /** กลุ่มเป้าหมาย: 'all' | 'male' | 'female' (ใช้ตัดสินใจ tag chip) */
+  audience: "all" | "male" | "female";
+}
+
+/** อ่านสถิติแล้ว pick label ตามภาษา */
+export async function getStats(locale: Locale): Promise<StatItem[]> {
+  const rows = await getSheet("stats");
+  return rows.map((r) => {
+    const raw = (r.value ?? "").toString().trim();
+    return {
+      key: r.key,
+      value: Number(raw),
+      display: raw || "—",
+      label: r[`label_${locale}`] ?? r.label_en ?? r.key,
+    };
+  });
+}
+
+export interface InstitutionItem {
+  id: string;
+  short: string;
+  name: string;
+  studentsCount: number;
+  area: string;
+  type: string;
+  /** คณะที่นักศึกษาไทยเรียน (แสดงเป็น chip ใน detail panel) */
+  faculty: string;
+  /** รูปโลโก้สถาบัน — แสดงในการ์ดและ pin บนแผนที่ */
+  logoUrl: string;
+  /** รูปสถาบัน (campus photo) — แสดงในด้านบนของ detail panel */
+  imageUrl: string;
+  /** ลิงก์เว็บไซต์ทางการ */
+  website: string;
+  /** พิกัด lat/lng สำหรับปักหมุดบนแผนที่คูเวต */
+  lat: number;
+  lng: number;
+}
+
+export interface CouncilMember {
+  id: string;
+  name: string;
+  role: string;
+  avatarUrl: string;
+  year: string;
+  /** ประเภทสภา: 'main' (รวม) | 'female' (สภาหญิงแยก) — default = 'main' */
+  councilType: "main" | "female";
+  /** ช่องทางติดต่อรายบุคคล (optional) */
+  email: string;
+  phone: string;
+  line: string;
+}
+
+export interface ChannelItem {
+  key: string;
+  /** อีโมจิ/ตัวอักษรย่อ ใช้แสดงในไอคอนกล่อง */
+  icon: string;
+  /** label ตามภาษา (เช่น "อีเมล" / "Email" / "البريد") */
+  label: string;
+  value: string;
+  /** URL ถ้าคลิกแล้วลิงก์ออกไป (mailto:, tel:, https:...) */
+  href: string;
+}
+
+/**
+ * อ่านรายชื่อสถาบันการศึกษา (tab "institutions")
+ * Schema:
+ *   id | short | name_th/en/ar | students | area_th/en/ar | type_th/en/ar
+ *   | faculty_th/en/ar | logo_url | image_url | website | lat | lng | published
+ */
+export async function getInstitutions(locale: Locale): Promise<InstitutionItem[]> {
+  const rows = await getSheet("institutions");
+  return rows
+    .filter((r) => (r.published ?? "TRUE").toUpperCase() !== "FALSE")
+    .map((r) => ({
+      id: r.id,
+      short: r.short,
+      name: r[`name_${locale}`] ?? r.name_th ?? r.name_en ?? "",
+      studentsCount: Number(r.students) || 0,
+      area: r[`area_${locale}`] ?? r.area_th ?? r.area_en ?? "",
+      type: r[`type_${locale}`] ?? r.type_th ?? r.type_en ?? "",
+      faculty: r[`faculty_${locale}`] ?? r.faculty_th ?? r.faculty_en ?? "",
+      logoUrl: normalizeImageUrl(r.logo_url ?? ""),
+      imageUrl: normalizeImageUrl(r.image_url ?? ""),
+      website: r.website ?? "",
+      lat: Number(r.lat) || 0,
+      lng: Number(r.lng) || 0,
+    }));
+}
+
+/**
+ * อ่านคณะกรรมการชมรม (tab "committee")
+ * Schema:
+ *   id | year | council_type (main|female) | role_th/en/ar | name_th/en/ar
+ *   | avatar_url | email | phone | line | published
+ */
+export async function getCouncil(locale: Locale): Promise<CouncilMember[]> {
+  const rows = await getSheet("committee");
+  return rows
+    .filter((r) => (r.published ?? "TRUE").toUpperCase() !== "FALSE")
+    .map((r) => {
+      const councilType: CouncilMember["councilType"] =
+        (r.council_type ?? "main").toLowerCase() === "female" ? "female" : "main";
+      return {
+        id: r.id,
+        year: r.year,
+        councilType,
+        role: r[`role_${locale}`] ?? r.role_th ?? r.role_en ?? "",
+        name: r[`name_${locale}`] ?? r.name_th ?? r.name_en ?? "",
+        avatarUrl: normalizeImageUrl(r.avatar_url ?? ""),
+        email: r.email ?? "",
+        phone: r.phone ?? "",
+        line: r.line ?? "",
+      };
+    });
+}
+
+/**
+ * อ่านช่องทางติดต่อจาก tab "channels"
+ * Schema:
+ *   key | icon | label_th/en/ar | value | href | published
+ *   ตัวอย่าง: email | @ | อีเมล | info@thaikuwait.org | mailto:info@thaikuwait.org
+ */
+export async function getChannels(locale: Locale): Promise<ChannelItem[]> {
+  const rows = await getSheet("channels");
+  return rows
+    .filter((r) => (r.published ?? "TRUE").toUpperCase() !== "FALSE")
+    .map((r) => ({
+      key: r.key,
+      icon: r.icon || "·",
+      label: r[`label_${locale}`] ?? r.label_th ?? r.label_en ?? r.key,
+      value: r.value ?? "",
+      href: r.href ?? "",
+    }));
+}
+
+/**
+ * อ่าน content ที่แก้ใน sheet ได้ (tab "content")
+ * Schema:
+ *   key | value_th | value_en | value_ar | note
+ *   ตัวอย่าง key: hero_title, hero_lead, about_title, about_text, cta_band_title, ...
+ *
+ * ใช้ override ข้อความใน dictionary JSON — ถ้า key ไม่มีใน sheet → fallback ไป dict
+ */
+export async function getContent(locale: Locale): Promise<Record<string, string>> {
+  const rows = await getSheet("content");
+  const out: Record<string, string> = {};
+  for (const r of rows) {
+    const v = r[`value_${locale}`] ?? r.value_th ?? r.value_en;
+    if (r.key && v) out[r.key] = v;
+  }
+  return out;
+}
+
+/** อ่านรายการกิจกรรม — กรองเฉพาะที่ published = TRUE และเรียง date desc */
+export async function getActivities(locale: Locale): Promise<ActivityItem[]> {
+  const rows = await getSheet("activities");
+  return rows
+    .filter((r) => r.published?.toUpperCase() === "TRUE")
+    .map((r) => {
+      // image_url รองรับหลายรูป: คั่นด้วย "," หรือขึ้นบรรทัดใหม่
+      // แปลง Google Drive URL ทุกรูปเป็น format ที่แสดงได้
+      const images = (r.image_url || "")
+        .split(/[,\n]/)
+        .map((s) => normalizeImageUrl(s.trim()))
+        .filter(Boolean);
+      const aud = (r.audience ?? "all").toLowerCase();
+      const audience: ActivityItem["audience"] =
+        aud === "male" ? "male" : aud === "female" ? "female" : "all";
+      return {
+        id: r.id,
+        date: r.date,
+        images,
+        imageUrl: images[0] ?? "",
+        title: r[`title_${locale}`] ?? r.title_th ?? r.title_en ?? "",
+        description: r[`desc_${locale}`] ?? r.desc_th ?? r.desc_en ?? "",
+        location: r[`location_${locale}`] ?? r.location_th ?? r.location_en ?? "",
+        audience,
+      };
+    })
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
+}
