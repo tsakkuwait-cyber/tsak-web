@@ -13,7 +13,7 @@ import { ActivityGallery } from "@/components/ActivityGallery";
  */
 
 export const revalidate = Number(
-  process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 3600
+  process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 60
 );
 
 // Audience badge meta — palette + label key

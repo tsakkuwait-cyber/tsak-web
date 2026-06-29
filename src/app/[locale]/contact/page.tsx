@@ -16,7 +16,7 @@ import {
  */
 
 export const revalidate = Number(
-  process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 3600
+  process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 60
 );
 
 // fallback channels ถ้า sheet ยังไม่ตั้ง

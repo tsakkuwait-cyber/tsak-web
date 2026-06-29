@@ -12,7 +12,7 @@ import { KuwaitMap } from "@/components/KuwaitMap";
  */
 
 export const revalidate = Number(
-  process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 3600
+  process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 60
 );
 
 export default async function StudentsPage({

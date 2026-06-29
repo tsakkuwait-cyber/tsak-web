@@ -21,8 +21,10 @@ import { ActivityGallery } from "@/components/ActivityGallery";
  *   CTA BAND      petrol bg + accent bar + title + button (right)
  */
 
+// ISR — refresh ข้อมูลจาก Google Sheet ทุก 60 วินาที (default)
+// ปรับได้ที่ env var NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS
 export const revalidate = Number(
-  process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 3600
+  process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 60
 );
 
 export default async function HomePage({
