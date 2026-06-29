@@ -42,9 +42,18 @@ function MemberCard({
   if (variant === "president") {
     return (
       <div className="mb-4 flex flex-wrap items-center gap-[22px] bg-navy p-[clamp(22px,3vw,30px)] text-white">
-        <div className="flex-none grid h-20 w-20 place-items-center border border-brand-200 bg-white/10 text-[32px] font-extrabold text-brand-200">
-          {initialOf(m.name)}
-        </div>
+        {m.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={m.avatarUrl}
+            alt={m.name}
+            className="flex-none h-20 w-20 border border-brand-200 object-cover"
+          />
+        ) : (
+          <div className="flex-none grid h-20 w-20 place-items-center border border-brand-200 bg-white/10 text-[32px] font-extrabold text-brand-200">
+            {initialOf(m.name)}
+          </div>
+        )}
         <div className="flex-1 basis-[200px] min-w-0">
           <div className="text-[12px] font-bold tracking-[0.1em] uppercase text-brand-200">
             {m.role}
@@ -58,9 +67,18 @@ function MemberCard({
   return (
     <div className="flex flex-col gap-2.5 border border-line bg-white p-[18px]">
       <div className="flex items-center gap-3.5">
-        <span className="flex-none grid h-12 w-12 place-items-center bg-brand-50 text-[20px] font-extrabold text-navy">
-          {initialOf(m.name)}
-        </span>
+        {m.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={m.avatarUrl}
+            alt={m.name}
+            className="flex-none h-12 w-12 object-cover"
+          />
+        ) : (
+          <span className="flex-none grid h-12 w-12 place-items-center bg-brand-50 text-[20px] font-extrabold text-navy">
+            {initialOf(m.name)}
+          </span>
+        )}
         <span className="flex flex-col min-w-0">
           <span className="text-[15px] font-bold text-navy truncate">{m.name}</span>
           <span className="mt-0.5 text-[12.5px] font-semibold text-brand-600">{m.role}</span>
