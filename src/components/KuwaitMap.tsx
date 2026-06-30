@@ -89,18 +89,40 @@ export function KuwaitMap({
   const pinned = institutions.filter((i) => i.lat !== 0 && i.lng !== 0);
   const spreadPositions = spreadPins(pinned);
 
-  // คำนวณ faculty breakdown
-  const facultyItems = selected?.faculty
+  // Parse faculty data — รองรับทั้ง:
+  //   "Engineering:5"           (no level)
+  //   "[ป.ตรี] Engineering:5"   (with degree level)
+  type FacultyEntry = { level: string | null; name: string; count: number };
+  const facultyItems: FacultyEntry[] = selected?.faculty
     ? selected.faculty
         .split(/[,،]/)
         .map((f) => f.trim())
         .filter(Boolean)
         .map((f) => {
-          const [name, countStr] = f.split(":").map((s) => s.trim());
-          return { name, count: Number(countStr) || 0 };
+          const m = f.match(/^\[([^\]]+)\]\s*(.+?):(\d+)\s*$/);
+          if (m) {
+            return { level: m[1].trim(), name: m[2].trim(), count: Number(m[3]) };
+          }
+          const fb = f.match(/^(.+?):(\d+)\s*$/);
+          if (fb) {
+            return { level: null, name: fb[1].trim(), count: Number(fb[2]) };
+          }
+          return { level: null, name: f, count: 0 };
         })
     : [];
+
+  // จัดกลุ่มตาม level (ถ้ามี)
+  const facultyGroups = facultyItems.reduce<Map<string, FacultyEntry[]>>(
+    (acc, f) => {
+      const key = f.level ?? "__none__";
+      if (!acc.has(key)) acc.set(key, []);
+      acc.get(key)!.push(f);
+      return acc;
+    },
+    new Map()
+  );
   const facultyTotal = facultyItems.reduce((s, f) => s + f.count, 0) || 1;
+  const hasLevels = facultyItems.some((f) => f.level !== null);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
@@ -123,59 +145,72 @@ export function KuwaitMap({
             preserveAspectRatio="xMidYMid meet"
             className="absolute inset-0 h-full w-full"
           >
-            {/* Kuwait mainland — accurate outline based on real geography
-                clockwise: NW Iraq border → N → NE → E coast w/ Kuwait Bay → S Saudi → W */}
+            {/* Kuwait mainland — closer to real geography with prominent Kuwait Bay
+                Clockwise from NW corner */}
             <path
-              d="M 11.5 14
-                 L 38 11.5 L 60 10.5 L 67 12
-                 L 70 18 L 71 24
-                 L 72 29 L 73 33
-                 L 68 36 L 60 39 L 53 42
-                 L 49 47 L 55 49
-                 L 64 50 L 71 53 L 74 58
-                 L 76 65 L 75 73 L 73 80
-                 L 67 84 L 55 86 L 38 85 L 22 82 L 12 76
-                 L 9 67 L 8 55 L 8 42 L 9 28 L 10.5 18 Z"
+              d="M 13 14
+                 L 28 12 L 46 11 L 60 11 L 67 13
+                 L 70 17 L 71 22 L 72 28
+                 L 74 34
+                 L 70 38 L 62 40 L 54 42 L 48 46
+                 L 52 51 L 60 52 L 68 53
+                 L 74 58 L 77 65 L 77 73 L 75 80
+                 L 70 85 L 60 87 L 42 87 L 24 85 L 14 82
+                 L 9 75 L 7 62 L 7 48 L 8 32 L 10 22 Z"
               fill="#FBFCFA"
               stroke="#10968D"
-              strokeWidth="0.5"
+              strokeWidth="0.55"
               strokeLinejoin="round"
             />
 
-            {/* Bubiyan Island — large, NE */}
+            {/* Bubiyan Island — large, elongated NE-SW */}
             <path
-              d="M 74 13 L 84 14 L 90 18 L 91 25 L 87 30 L 82 31 L 76 27 L 73 21 Z"
+              d="M 75 13 L 86 14 L 90 19 L 91 27 L 87 32 L 80 33 L 75 28 L 73 20 Z"
               fill="#F2FAF9"
               stroke="#10968D"
               strokeWidth="0.45"
               strokeLinejoin="round"
             />
 
-            {/* Warbah Island — small N of Bubiyan */}
+            {/* Warbah Island — tiny N of Bubiyan */}
             <path
-              d="M 78 9 L 84 9.5 L 83 12 L 78 11 Z"
+              d="M 79 8 L 86 9 L 85 11.5 L 79 10.5 Z"
               fill="#F2FAF9"
               stroke="#10968D"
               strokeWidth="0.35"
             />
 
-            {/* Failaka Island — small E of Kuwait Bay */}
+            {/* Failaka Island — small E of Kuwait City in bay */}
             <ellipse
-              cx="68"
-              cy="46"
-              rx="2.6"
-              ry="1.6"
+              cx="71"
+              cy="47"
+              rx="2.8"
+              ry="1.7"
               fill="#F2FAF9"
               stroke="#10968D"
               strokeWidth="0.45"
             />
 
+            {/* Bay label */}
+            <text
+              x="58"
+              y="48"
+              fontSize="1.8"
+              fontWeight="500"
+              fill="#0B7068"
+              textAnchor="middle"
+              opacity="0.6"
+              style={{ pointerEvents: "none" }}
+            >
+              Kuwait Bay
+            </text>
+
             {/* Kuwait City area label */}
             <text
-              x="52"
-              y="55"
+              x="56"
+              y="58"
               fontSize="2.2"
-              fontWeight="600"
+              fontWeight="700"
               fill="#0B7068"
               textAnchor="middle"
               style={{ pointerEvents: "none" }}
@@ -252,9 +287,9 @@ export function KuwaitMap({
       <aside className="flex flex-col gap-4">
         {selected ? (
           <>
-            {/* Selected institution — cover image + body */}
+            {/* Selected institution — cover photo + body (logo ลอยข้างชื่อ) */}
             <div className="overflow-hidden border border-line bg-white">
-              {/* Cover photo or gradient header */}
+              {/* Cover photo */}
               <div
                 className="relative w-full bg-gradient-to-br from-navy via-navy-dark to-brand-900"
                 style={{ aspectRatio: "16 / 9" }}
@@ -272,34 +307,36 @@ export function KuwaitMap({
                     [ campus photo ]
                   </div>
                 )}
-                {/* Type chip on photo */}
                 {selected.type && (
                   <span className="absolute top-3 start-3 inline-block bg-navy/85 backdrop-blur-sm px-3 py-1 text-[11px] font-bold tracking-wider uppercase text-brand-200">
                     {selected.type}
                   </span>
                 )}
-                {/* Logo — floating bottom-left over photo */}
-                {selected.logoUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={selected.logoUrl}
-                    alt=""
-                    referrerPolicy="no-referrer"
-                    className="absolute -bottom-6 start-5 h-14 w-14 rounded-full border-4 border-white bg-white object-cover shadow-md"
-                  />
-                )}
               </div>
 
-              {/* Body */}
-              <div className={`p-5 ${selected.logoUrl ? "pt-8" : ""}`}>
-                <h3 className="text-[18px] font-extrabold leading-tight text-navy line-clamp-2">
-                  {selected.name}
-                </h3>
-                {selected.area && (
-                  <p className="mt-1 text-[12.5px] text-ink-muted">
-                    📍 {selected.area}
-                  </p>
-                )}
+              {/* Body — logo เด่นข้างชื่อ (ไม่มีวงกลม ลอยสะอาด) */}
+              <div className="p-5">
+                <div className="flex items-start gap-3.5">
+                  {selected.logoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={selected.logoUrl}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      className="h-14 w-14 flex-none object-contain"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-[18px] font-extrabold leading-tight text-navy line-clamp-2">
+                      {selected.name}
+                    </h3>
+                    {selected.area && (
+                      <p className="mt-1 text-[12.5px] text-ink-muted">
+                        📍 {selected.area}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
                 <div className="mt-4 flex items-end gap-2.5">
                   <span className="font-display text-[40px] font-extrabold leading-none text-brand">
@@ -323,7 +360,7 @@ export function KuwaitMap({
               </div>
             </div>
 
-            {/* Faculty visualization */}
+            {/* Faculty visualization — grouped by degree level ถ้ามี */}
             {facultyItems.length > 0 && (
               <div className="border border-line bg-white p-5">
                 <div className="mb-4 flex items-baseline justify-between">
@@ -335,24 +372,46 @@ export function KuwaitMap({
                   </span>
                 </div>
 
-                <div className="space-y-3">
-                  {facultyItems.map((f) => {
-                    const pct = Math.round((f.count / facultyTotal) * 100);
+                <div className="space-y-4">
+                  {Array.from(facultyGroups.entries()).map(([groupKey, items]) => {
+                    const groupTotal = items.reduce((s, f) => s + f.count, 0);
                     return (
-                      <div key={f.name}>
-                        <div className="mb-1 flex items-baseline justify-between gap-2">
-                          <span className="text-[13px] font-semibold text-navy truncate">
-                            {f.name}
-                          </span>
-                          <span className="font-display text-[13px] font-bold text-brand">
-                            {f.count}
-                          </span>
-                        </div>
-                        <div className="relative h-1.5 overflow-hidden bg-brand-50">
-                          <div
-                            className="absolute inset-y-0 start-0 bg-gradient-to-r from-brand to-brand-600"
-                            style={{ width: `${pct}%` }}
-                          />
+                      <div key={groupKey}>
+                        {/* Group header — แสดงเฉพาะเมื่อมี level data */}
+                        {hasLevels && groupKey !== "__none__" && (
+                          <div className="mb-2.5 flex items-baseline gap-2">
+                            <span className="inline-block bg-navy px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase text-white">
+                              {groupKey}
+                            </span>
+                            <span className="font-display text-[12px] font-bold text-brand-600">
+                              {groupTotal} {labels.studentsLabel}
+                            </span>
+                            <span className="flex-1 h-px bg-line" />
+                          </div>
+                        )}
+                        {/* Faculty bars */}
+                        <div className="space-y-2.5">
+                          {items.map((f) => {
+                            const pct = Math.round((f.count / facultyTotal) * 100);
+                            return (
+                              <div key={`${groupKey}-${f.name}`}>
+                                <div className="mb-1 flex items-baseline justify-between gap-2">
+                                  <span className="text-[13px] font-semibold text-navy truncate">
+                                    {f.name}
+                                  </span>
+                                  <span className="font-display text-[13px] font-bold text-brand">
+                                    {f.count}
+                                  </span>
+                                </div>
+                                <div className="relative h-1.5 overflow-hidden bg-brand-50">
+                                  <div
+                                    className="absolute inset-y-0 start-0 bg-gradient-to-r from-brand to-brand-600"
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     );
