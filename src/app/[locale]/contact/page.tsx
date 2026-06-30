@@ -322,7 +322,10 @@ export default async function ContactPage({
                       <span className="text-[12px] font-semibold text-ink-subtle">
                         {ch.label}
                       </span>
-                      <span className="text-[14.5px] font-semibold text-navy overflow-hidden text-ellipsis">
+                      <span
+                        dir="auto"
+                        className="text-[14.5px] font-semibold text-navy overflow-hidden text-ellipsis"
+                      >
                         {ch.value}
                       </span>
                     </span>

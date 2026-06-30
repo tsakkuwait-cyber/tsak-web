@@ -71,9 +71,9 @@ export function Footer({
             {dict.footer.contactT}
           </div>
           <div className="flex flex-col gap-[11px] text-[14.5px]">
-            <span>info@thaikuwait.org</span>
+            <span dir="auto">info@thaikuwait.org</span>
             <span dir="ltr">+965 5xxx xxxx</span>
-            <span>{dict.footer.location}</span>
+            <span dir="auto">{dict.footer.location}</span>
           </div>
         </div>
 
