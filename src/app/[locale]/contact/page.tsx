@@ -47,6 +47,7 @@ function MemberCard({
           <img
             src={m.avatarUrl}
             alt={m.name}
+            referrerPolicy="no-referrer"
             className="flex-none h-20 w-20 border border-brand-200 object-cover"
           />
         ) : (
@@ -72,6 +73,7 @@ function MemberCard({
           <img
             src={m.avatarUrl}
             alt={m.name}
+            referrerPolicy="no-referrer"
             className="flex-none h-12 w-12 object-cover"
           />
         ) : (

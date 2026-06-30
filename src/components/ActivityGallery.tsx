@@ -61,6 +61,7 @@ export function ActivityGallery({
         <img
           src={images[0]}
           alt={alt}
+          referrerPolicy="no-referrer"
           className="h-full w-full object-cover transition-transform group-hover:scale-[1.05]"
         />
         {total > 1 && (
@@ -111,6 +112,7 @@ export function ActivityGallery({
             <img
               src={images[openIdx!]}
               alt={`${alt} ${openIdx! + 1}`}
+              referrerPolicy="no-referrer"
               className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain"
             />
           </div>

@@ -98,14 +98,15 @@ export type SheetRow = Record<string, string>;
  *   - https://drive.google.com/uc?export=view&id=FILE_ID
  *   - https://drive.google.com/uc?id=FILE_ID
  *
- * → output: https://drive.google.com/thumbnail?id=FILE_ID&sz=w1600
- *   (ใช้กับ <img> ตรงๆ ได้ — ไม่ต้อง login Drive)
+ * → output: https://lh3.googleusercontent.com/d/FILE_ID=w1600
+ *   (เสถียรกว่า /thumbnail — Google Photos CDN, ไม่ rate-limit)
+ *   ใช้กับ <img referrerpolicy="no-referrer"> เพื่อกัน hotlink block
  */
 function normalizeImageUrl(url: string): string {
   if (!url) return "";
   const match = url.match(/(?:\/d\/|[?&]id=)([a-zA-Z0-9_-]{20,})/);
   if (!match) return url;
-  return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600`;
+  return `https://lh3.googleusercontent.com/d/${match[1]}=w1600`;
 }
 
 function rowsToObjects(rows: string[][]): SheetRow[] {

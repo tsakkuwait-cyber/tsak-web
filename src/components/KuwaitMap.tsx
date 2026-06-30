@@ -174,6 +174,7 @@ export function KuwaitMap({
                 <img
                   src={selected.imageUrl}
                   alt={selected.name}
+                  referrerPolicy="no-referrer"
                   className="h-[140px] w-full object-cover"
                 />
               )}
@@ -184,6 +185,7 @@ export function KuwaitMap({
                     <img
                       src={selected.logoUrl}
                       alt=""
+                      referrerPolicy="no-referrer"
                       className="h-12 w-12 flex-none rounded-sm bg-white object-contain p-1"
                     />
                   ) : (
