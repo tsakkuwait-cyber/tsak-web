@@ -8,18 +8,17 @@ import {
 } from "@/lib/google-sheets";
 
 /**
- * Contact — petrol design
- *   Numbered hero
- *   2-col layout:
- *     LEFT  → Council (สภา main + สภา female แยก, แต่ละคนมีช่องทางติดต่อรายคน)
- *     RIGHT → Channels (จาก sheet) + Support (sticky on desktop)
+ * Contact — Council redesigned
+ *   - Main council: President เด่น (horizontal hero card) + grid 3-4 col
+ *     แต่ละการ์ดมีรูปใหญ่ aspect-square + role + name + contacts
+ *   - Female council: ออกแบบเหมือนกันแต่ไม่มีรูป
+ *     ใช้ initial decorative + gradient เป็นเอกลักษณ์
  */
 
 export const revalidate = Number(
   process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 60
 );
 
-// fallback channels ถ้า sheet ยังไม่ตั้ง
 const FALLBACK_CHANNELS = [
   { key: "email", icon: "@", label: "Email", value: "info@thaikuwait.org", href: "mailto:info@thaikuwait.org" },
 ];
@@ -31,67 +30,9 @@ function initialOf(name: string): string {
   return (words[words.length - 1][0] ?? "?").toUpperCase();
 }
 
-// การ์ดสมาชิก reusable
-function MemberCard({
-  m,
-  variant = "default",
-}: {
-  m: CouncilMember;
-  variant?: "president" | "default";
-}) {
-  if (variant === "president") {
-    return (
-      <div className="mb-4 flex flex-wrap items-center gap-[22px] bg-navy p-[clamp(22px,3vw,30px)] text-white">
-        {m.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={m.avatarUrl}
-            alt={m.name}
-            referrerPolicy="no-referrer"
-            className="flex-none h-20 w-20 border border-brand-200 object-cover"
-          />
-        ) : (
-          <div className="flex-none grid h-20 w-20 place-items-center border border-brand-200 bg-white/10 text-[32px] font-extrabold text-brand-200">
-            {initialOf(m.name)}
-          </div>
-        )}
-        <div className="flex-1 basis-[200px] min-w-0">
-          <div className="text-[12px] font-bold tracking-[0.1em] uppercase text-brand-200">
-            {m.role}
-          </div>
-          <div className="mt-1.5 text-[22px] font-extrabold">{m.name}</div>
-          <MemberContacts m={m} dark />
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="flex flex-col gap-2.5 border border-line bg-white p-[18px]">
-      <div className="flex items-center gap-3.5">
-        {m.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={m.avatarUrl}
-            alt={m.name}
-            referrerPolicy="no-referrer"
-            className="flex-none h-12 w-12 object-cover"
-          />
-        ) : (
-          <span className="flex-none grid h-12 w-12 place-items-center bg-brand-50 text-[20px] font-extrabold text-navy">
-            {initialOf(m.name)}
-          </span>
-        )}
-        <span className="flex flex-col min-w-0">
-          <span className="text-[15px] font-bold text-navy truncate">{m.name}</span>
-          <span className="mt-0.5 text-[12.5px] font-semibold text-brand-600">{m.role}</span>
-        </span>
-      </div>
-      <MemberContacts m={m} />
-    </div>
-  );
-}
-
-// แถวช่องทางติดต่อรายคน — แสดงเฉพาะที่มีค่า
+/* ────────────────────────────────────────────────────────────
+ *  CONTACT ICONS (small)
+ * ──────────────────────────────────────────────────────────── */
 function MemberContacts({ m, dark = false }: { m: CouncilMember; dark?: boolean }) {
   const items = [
     m.email && { icon: "✉", value: m.email, href: `mailto:${m.email}` },
@@ -102,37 +43,232 @@ function MemberContacts({ m, dark = false }: { m: CouncilMember; dark?: boolean 
   if (items.length === 0) return null;
 
   return (
-    <div className={`mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5 ${dark ? "text-[#BBDCD9]" : "text-ink-muted"}`}>
+    <div className={`flex flex-col gap-1.5 ${dark ? "text-[#BBDCD9]" : "text-ink-muted"}`}>
       {items.map((it, idx) => {
-        const content = (
-          <span className="inline-flex items-center gap-1.5 text-[12.5px]" dir={it.dir}>
+        const inner = (
+          <span className="inline-flex items-center gap-2 text-[12.5px]" dir={it.dir}>
             <span
               className={[
-                "grid h-4 w-4 place-items-center text-[10px] font-bold",
+                "grid h-[18px] w-[18px] flex-none place-items-center text-[10px] font-bold",
                 dark ? "bg-white/15 text-brand-200" : "bg-brand-50 text-navy",
               ].join(" ")}
             >
               {it.icon}
             </span>
-            {it.value}
+            <span className="truncate">{it.value}</span>
           </span>
         );
         return it.href ? (
           <a
             key={idx}
             href={it.href}
-            className={dark ? "hover:text-white" : "hover:text-brand"}
+            className={dark ? "hover:text-white" : "hover:text-brand transition-colors"}
           >
-            {content}
+            {inner}
           </a>
         ) : (
-          <span key={idx}>{content}</span>
+          <span key={idx}>{inner}</span>
         );
       })}
     </div>
   );
 }
 
+/* ────────────────────────────────────────────────────────────
+ *  PRESIDENT CARD — horizontal hero, full width
+ * ──────────────────────────────────────────────────────────── */
+function PresidentCard({ m, showPhoto }: { m: CouncilMember; showPhoto: boolean }) {
+  return (
+    <div className="mb-6 grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-0 overflow-hidden border-2 border-navy bg-navy text-white">
+      {/* Photo / decorative head */}
+      <div className="relative aspect-square sm:aspect-auto sm:h-full bg-gradient-to-br from-navy via-navy to-navy-dark">
+        {showPhoto && m.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={m.avatarUrl}
+            alt={m.name}
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <DecorativeInitial name={m.name} size="lg" dark />
+        )}
+      </div>
+      {/* Info */}
+      <div className="flex flex-col gap-4 p-[clamp(20px,3vw,32px)]">
+        <div>
+          <div className="text-[11px] font-bold tracking-[0.14em] uppercase text-brand-200">
+            {m.role}
+          </div>
+          <h3 className="mt-1.5 text-[clamp(22px,2.8vw,28px)] font-extrabold leading-tight">
+            {m.name}
+          </h3>
+        </div>
+        <div className="mt-auto">
+          <MemberContacts m={m} dark />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+ *  MEMBER CARD — vertical grid card
+ * ──────────────────────────────────────────────────────────── */
+function MemberCard({ m, showPhoto }: { m: CouncilMember; showPhoto: boolean }) {
+  return (
+    <div className="flex flex-col overflow-hidden border border-line bg-white transition-shadow hover:shadow-card">
+      {/* Head — photo or decorative initial */}
+      <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-brand-50 to-brand-100">
+        {showPhoto && m.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={m.avatarUrl}
+            alt={m.name}
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <DecorativeInitial name={m.name} size="md" />
+        )}
+      </div>
+
+      {/* Info section */}
+      <div className="flex flex-1 flex-col gap-3 p-[18px]">
+        <div>
+          <div className="text-[11px] font-bold tracking-[0.12em] uppercase text-brand-600">
+            {m.role}
+          </div>
+          <h3 className="mt-1.5 text-[16px] font-extrabold leading-tight text-navy line-clamp-2">
+            {m.name}
+          </h3>
+        </div>
+        <div className="mt-auto">
+          <MemberContacts m={m} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+ *  DECORATIVE INITIAL — สำหรับการ์ดที่ไม่มีรูป
+ *  (เน้น typography + decorative element ไม่ใช่ icon ทั่วไป)
+ * ──────────────────────────────────────────────────────────── */
+function DecorativeInitial({
+  name,
+  size = "md",
+  dark = false,
+}: {
+  name: string;
+  size?: "md" | "lg";
+  dark?: boolean;
+}) {
+  const initial = initialOf(name);
+  const initialClass =
+    size === "lg"
+      ? "text-[clamp(80px,12vw,120px)]"
+      : "text-[clamp(60px,10vw,90px)]";
+
+  return (
+    <div className="absolute inset-0 grid place-items-center">
+      {/* subtle decorative pattern lines */}
+      <svg
+        className="absolute inset-0 h-full w-full opacity-[0.08]"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M0 50 Q 25 30 50 50 T 100 50"
+          stroke={dark ? "#7FD8CF" : "#0C3B45"}
+          strokeWidth="0.5"
+          fill="none"
+        />
+        <path
+          d="M0 65 Q 25 45 50 65 T 100 65"
+          stroke={dark ? "#7FD8CF" : "#0C3B45"}
+          strokeWidth="0.5"
+          fill="none"
+        />
+      </svg>
+      {/* main initial */}
+      <span
+        className={`font-display font-extrabold leading-none ${initialClass} ${
+          dark ? "text-brand-200/50" : "text-brand-600/30"
+        }`}
+        aria-hidden
+      >
+        {initial}
+      </span>
+      {/* corner accent line */}
+      <span
+        className={`absolute bottom-3 start-3 h-px w-8 ${
+          dark ? "bg-brand-200" : "bg-brand"
+        }`}
+      />
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+ *  COUNCIL SECTION — reusable
+ * ──────────────────────────────────────────────────────────── */
+function CouncilSection({
+  title,
+  subtitle,
+  members,
+  showPhoto,
+  withPresident = true,
+}: {
+  title: string;
+  subtitle?: string;
+  members: CouncilMember[];
+  showPhoto: boolean;
+  withPresident?: boolean;
+}) {
+  if (members.length === 0) return null;
+
+  const president = withPresident ? members[0] : null;
+  const rest = withPresident ? members.slice(1) : members;
+
+  return (
+    <div className="mb-12 last:mb-0">
+      {/* Section header */}
+      <div className="mb-6 flex items-baseline gap-4">
+        <div>
+          <div className="text-[13px] font-bold tracking-[0.12em] uppercase text-brand-600">
+            {title}
+          </div>
+          {subtitle && (
+            <div className="mt-1 text-[12px] text-ink-subtle">{subtitle}</div>
+          )}
+        </div>
+        <span className="flex-1 h-px bg-line" />
+      </div>
+
+      {/* President (hero card) */}
+      {president && <PresidentCard m={president} showPhoto={showPhoto} />}
+
+      {/* Other members */}
+      {rest.length > 0 && (
+        <div
+          className="grid gap-4"
+          style={{
+            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+          }}
+        >
+          {rest.map((m) => (
+            <MemberCard key={m.id} m={m} showPhoto={showPhoto} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════
+ *  PAGE
+ * ════════════════════════════════════════════════════════════ */
 export default async function ContactPage({
   params,
 }: {
@@ -151,14 +287,9 @@ export default async function ContactPage({
   const femaleCouncil = council.filter((c) => c.councilType === "female");
   const channels = channelsData.length > 0 ? channelsData : FALLBACK_CHANNELS;
 
-  // dict keys (with fallback to legacy title)
   const d = dict.contact as Record<string, string>;
   const mainTitle = d.councilMainTitle ?? d.councilTitle;
   const femaleTitle = d.councilFemaleTitle ?? d.councilTitle;
-
-  // president = first item ของ main council
-  const president = mainCouncil[0];
-  const mainRest = mainCouncil.slice(1);
 
   return (
     <>
@@ -178,61 +309,31 @@ export default async function ContactPage({
         </p>
       </section>
 
-      {/* ── 2-COL ────────────────────────────────────────── */}
+      {/* ── 2-COL: Councils (LEFT) + Channels/Support (RIGHT) ─── */}
       <section className="container flex flex-wrap items-start gap-x-[clamp(28px,4vw,48px)] gap-y-10 pb-[clamp(48px,7vw,84px)]">
         {/* LEFT — Councils */}
         <div className="flex-[1.5] basis-[420px] min-w-[300px]">
-          {/* MAIN council */}
-          <div className="mb-6 flex items-center gap-4">
-            <span className="text-[13px] font-bold tracking-[0.12em] uppercase text-brand-600">
-              {mainTitle}
-            </span>
-            <span className="flex-1 h-px bg-line" />
-          </div>
-
           {council.length === 0 ? (
             <div className="border border-dashed border-line bg-white p-8 text-center text-ink-muted">
               {dict.activities.noEvents.replace("activities", "committee")}
             </div>
           ) : (
             <>
-              {/* president card */}
-              {president && <MemberCard m={president} variant="president" />}
-              {mainRest.length > 0 && (
-                <div
-                  className="grid gap-3.5"
-                  style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}
-                >
-                  {mainRest.map((c) => (
-                    <MemberCard key={c.id} m={c} />
-                  ))}
-                </div>
-              )}
-
-              {/* FEMALE council */}
-              {femaleCouncil.length > 0 && (
-                <>
-                  <div className="mt-10 mb-6 flex items-center gap-4">
-                    <span className="text-[13px] font-bold tracking-[0.12em] uppercase text-brand-600">
-                      {femaleTitle}
-                    </span>
-                    <span className="flex-1 h-px bg-line" />
-                  </div>
-                  <div
-                    className="grid gap-3.5"
-                    style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}
-                  >
-                    {femaleCouncil.map((c) => (
-                      <MemberCard key={c.id} m={c} />
-                    ))}
-                  </div>
-                </>
-              )}
+              <CouncilSection
+                title={mainTitle}
+                members={mainCouncil}
+                showPhoto={true}
+              />
+              <CouncilSection
+                title={femaleTitle}
+                members={femaleCouncil}
+                showPhoto={false}
+              />
             </>
           )}
         </div>
 
-        {/* RIGHT — Channels + Support */}
+        {/* RIGHT — Channels + Support (sticky) */}
         <aside className="flex-1 basis-[300px] min-w-[280px] flex flex-col gap-[18px] lg:sticky lg:top-[90px]">
           <div className="border border-line border-t-[3px] border-t-brand bg-white p-[22px]">
             <div className="mb-4 text-[13px] font-bold tracking-[0.08em] uppercase text-brand-600">
