@@ -92,14 +92,17 @@ function PhotoCard({
   return (
     <div
       className={[
-        "flex flex-col overflow-hidden transition-shadow hover:shadow-soft",
+        // mobile: horizontal | sm+: vertical
+        "flex flex-row sm:flex-col overflow-hidden transition-shadow hover:shadow-soft",
         isPresident
           ? "border-2 border-brand bg-navy text-white"
           : "border border-line bg-white",
       ].join(" ")}
     >
-      {/* Photo — aspect 4:5 portrait, top-positioned crop */}
-      <div className="relative w-full overflow-hidden bg-gradient-to-br from-brand-50 to-brand-100" style={{ aspectRatio: "4 / 5" }}>
+      {/* Photo — mobile: square 110px | sm+: portrait 4:5 full-width */}
+      <div
+        className="relative flex-none w-[110px] sm:w-full overflow-hidden bg-gradient-to-br from-brand-50 to-brand-100 aspect-square sm:aspect-[4/5]"
+      >
         {m.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -111,19 +114,19 @@ function PhotoCard({
           />
         ) : (
           <div className="absolute inset-0 grid place-items-center">
-            <span className="font-display text-[80px] font-extrabold text-brand-600/30">
+            <span className="font-display text-[48px] sm:text-[80px] font-extrabold text-brand-600/30">
               {initialOf(m.name)}
             </span>
           </div>
         )}
       </div>
 
-      {/* Info */}
-      <div className={`flex flex-1 flex-col gap-3 ${isPresident ? "p-6" : "p-5"}`}>
+      {/* Info — compact mobile padding */}
+      <div className={`flex flex-1 flex-col gap-2 sm:gap-3 min-w-0 ${isPresident ? "p-4 sm:p-6" : "p-3.5 sm:p-5"}`}>
         <div>
           <div
             className={[
-              "text-[11px] font-bold tracking-[0.12em] uppercase",
+              "text-[10.5px] sm:text-[11px] font-bold tracking-[0.1em] uppercase",
               isPresident ? "text-brand-200" : "text-brand-600",
             ].join(" ")}
           >
@@ -131,10 +134,10 @@ function PhotoCard({
           </div>
           <h3
             className={[
-              "mt-1.5 font-extrabold leading-tight line-clamp-2",
+              "mt-1 font-extrabold leading-tight line-clamp-2",
               isPresident
-                ? "text-[clamp(20px,2.2vw,24px)]"
-                : "text-[16px] text-navy",
+                ? "text-[17px] sm:text-[clamp(20px,2.2vw,24px)]"
+                : "text-[14.5px] sm:text-[16px] text-navy",
             ].join(" ")}
           >
             {m.name}
@@ -167,10 +170,10 @@ function NameCard({
   return (
     <div
       className={[
-        "flex flex-col gap-3 transition-shadow hover:shadow-card",
+        "flex flex-col gap-2 sm:gap-3 transition-shadow hover:shadow-card",
         isPresident
-          ? "border-2 border-brand bg-navy text-white p-7"
-          : "border border-line border-l-[3px] border-l-brand bg-white p-5",
+          ? "border-2 border-brand bg-navy text-white p-4 sm:p-7"
+          : "border border-line border-l-[3px] border-l-brand bg-white p-3.5 sm:p-5",
       ].join(" ")}
     >
       <div>

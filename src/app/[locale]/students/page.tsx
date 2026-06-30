@@ -224,22 +224,16 @@ export default async function StudentsPage({
               {d.noHighlights}
             </div>
           ) : (
-            <div
-              className="grid gap-6"
-              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}
-            >
+            <div className="grid gap-3 lg:grid-cols-2">
               {highlights.map((h) => {
                 const style = TYPE_STYLE[h.type];
                 return (
                   <article
                     key={h.id}
-                    className="flex flex-col overflow-hidden border border-line bg-white transition-shadow hover:shadow-card"
+                    className="flex items-stretch gap-0 border border-line bg-white overflow-hidden transition-shadow hover:shadow-card"
                   >
-                    {/* Photo */}
-                    <div
-                      className="relative bg-gradient-to-br from-brand-50 to-brand-100"
-                      style={{ aspectRatio: "4 / 3" }}
-                    >
+                    {/* Thumbnail square */}
+                    <div className="relative flex-none w-[92px] sm:w-[110px] bg-gradient-to-br from-brand-50 to-brand-100">
                       {h.photoUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -251,47 +245,36 @@ export default async function StudentsPage({
                         />
                       ) : (
                         <div className="absolute inset-0 grid place-items-center">
-                          <span className="font-display text-[60px] font-extrabold text-brand-600/25">
+                          <span className="font-display text-[36px] font-extrabold text-brand-600/30">
                             {h.name.slice(0, 1)}
                           </span>
                         </div>
                       )}
-                      {/* Type chip + year */}
-                      <div className="absolute top-3 start-3 flex items-center gap-2">
+                    </div>
+
+                    {/* Body — compact list */}
+                    <div className="flex flex-1 flex-col justify-center p-3.5 min-w-0">
+                      <div className="mb-1 flex items-center gap-2">
                         <span
-                          className={`inline-block px-2.5 py-1 text-[11px] font-bold ${style.bg} ${style.text}`}
+                          className={`inline-block px-2 py-0.5 text-[10.5px] font-bold ${style.bg} ${style.text}`}
                         >
                           {typeLabel(h.type)}
                         </span>
                         {h.year && (
-                          <span className="font-display text-[11px] font-bold text-white bg-navy/70 backdrop-blur-sm px-2 py-1">
-                            {h.year}
+                          <span className="font-display text-[11px] font-bold text-ink-muted">
+                            · {h.year}
                           </span>
                         )}
                       </div>
-                    </div>
-
-                    {/* Body */}
-                    <div className="flex flex-1 flex-col p-5">
-                      <h3 className="text-[17px] font-extrabold leading-snug text-navy line-clamp-2">
+                      <h3 className="text-[14.5px] font-extrabold leading-tight text-navy line-clamp-2">
                         {h.headline}
                       </h3>
-                      <div className="mt-1 text-[12.5px] font-semibold text-brand-600">
+                      <div className="mt-1 text-[12px] font-semibold text-brand-600 truncate">
                         {h.name}
                         {h.institution && (
-                          <span className="text-ink-muted font-medium">
-                            {" "}· {h.institution}
-                          </span>
-                        )}
-                        {h.major && (
-                          <span className="text-ink-muted font-medium"> · {h.major}</span>
+                          <span className="text-ink-muted font-medium"> · {h.institution}</span>
                         )}
                       </div>
-                      {h.story && (
-                        <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft line-clamp-3">
-                          {h.story}
-                        </p>
-                      )}
                     </div>
                   </article>
                 );

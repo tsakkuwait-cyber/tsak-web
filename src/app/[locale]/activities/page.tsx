@@ -109,7 +109,7 @@ export default async function ActivitiesPage({
                 </div>
 
                 <div
-                  className="grid gap-6"
+                  className="grid gap-3 sm:gap-6"
                   style={{
                     gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
                   }}
@@ -119,10 +119,10 @@ export default async function ActivitiesPage({
                     return (
                       <article
                         key={act.id}
-                        className="flex flex-col border border-line bg-white transition-shadow hover:shadow-card"
+                        className="flex flex-row sm:flex-col border border-line bg-white transition-shadow hover:shadow-card overflow-hidden"
                       >
-                        {/* IMAGE — เด่นสุด */}
-                        <div className="relative" style={{ aspectRatio: "16 / 10" }}>
+                        {/* IMAGE — mobile: square 110px | desktop: 16:10 full-width */}
+                        <div className="relative flex-none w-[110px] aspect-square sm:w-full sm:aspect-[16/10]">
                           {act.images.length > 0 ? (
                             <ActivityGallery
                               images={act.images}
@@ -140,29 +140,29 @@ export default async function ActivitiesPage({
                               [ photo ]
                             </div>
                           )}
-                          {/* audience tag (top-left overlay) */}
+                          {/* audience tag */}
                           <span
-                            className={`absolute top-3 start-3 z-[2] inline-block px-2.5 py-1 text-[11.5px] font-bold ${aud.bg} ${aud.text}`}
+                            className={`absolute top-2 start-2 sm:top-3 sm:start-3 z-[2] inline-block px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-[11.5px] font-bold ${aud.bg} ${aud.text}`}
                           >
                             {audienceLabel(act.audience)}
                           </span>
                         </div>
 
-                        {/* TEXT — ย่อแน่น */}
-                        <div className="flex flex-1 flex-col p-[18px]">
-                          <time className="font-display text-[12.5px] font-bold text-brand-600">
+                        {/* TEXT */}
+                        <div className="flex flex-1 flex-col p-3 sm:p-[18px] min-w-0">
+                          <time className="font-display text-[11.5px] sm:text-[12.5px] font-bold text-brand-600">
                             {act.date}
                           </time>
-                          <h3 className="mt-2 text-[17px] font-bold leading-snug text-navy line-clamp-2">
+                          <h3 className="mt-1 sm:mt-2 text-[14.5px] sm:text-[17px] font-bold leading-snug text-navy line-clamp-2">
                             {act.title}
                           </h3>
                           {act.description && (
-                            <p className="mt-1.5 text-[13.5px] leading-snug text-ink-muted line-clamp-2">
+                            <p className="mt-1 text-[12.5px] sm:text-[13.5px] leading-snug text-ink-muted line-clamp-2">
                               {act.description}
                             </p>
                           )}
                           {act.location && (
-                            <p className="mt-2 text-[12px] text-ink-subtle">
+                            <p className="mt-1.5 sm:mt-2 text-[11.5px] sm:text-[12px] text-ink-subtle">
                               📍 {act.location}
                             </p>
                           )}
