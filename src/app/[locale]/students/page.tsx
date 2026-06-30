@@ -20,6 +20,24 @@ export const revalidate = Number(
   process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 60
 );
 
+/** Parse faculty string เป็น { level | null, name, count }[]
+ *  รองรับทั้ง "[ป.ตรี] Engineering:5" และ "ม.4:3"
+ */
+type FacEntry = { level: string | null; name: string; count: number };
+function parseFaculty(raw: string): FacEntry[] {
+  return raw
+    .split(/[,،]/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => {
+      const m = s.match(/^\[([^\]]+)\]\s*(.+?):(\d+)\s*$/);
+      if (m) return { level: m[1].trim(), name: m[2].trim(), count: Number(m[3]) };
+      const fb = s.match(/^(.+?):(\d+)\s*$/);
+      if (fb) return { level: null, name: fb[1].trim(), count: Number(fb[2]) };
+      return { level: null, name: s, count: 0 };
+    });
+}
+
 // สี chip ของ highlight แต่ละ type
 const TYPE_STYLE: Record<HighlightType, { bg: string; text: string }> = {
   graduation: { bg: "bg-[#E1F4F1]", text: "text-[#0B7068]" },
@@ -178,7 +196,7 @@ export default async function StudentsPage({
                     </div>
                   </div>
 
-                  <div className="mt-auto flex items-baseline justify-between">
+                  <div className="flex items-baseline justify-between">
                     <div className="flex items-baseline gap-1.5">
                       <span className="font-display text-[28px] font-extrabold text-brand leading-none">
                         {inst.studentsCount}
@@ -198,6 +216,58 @@ export default async function StudentsPage({
                       </a>
                     )}
                   </div>
+
+                  {/* Faculty breakdown — universities = grouped by degree level
+                                          high schools = inline chips */}
+                  {inst.faculty &&
+                    (() => {
+                      const items = parseFaculty(inst.faculty);
+                      const hasLevels = items.some((f) => f.level !== null);
+                      // Group by level
+                      const groups = items.reduce<Map<string, FacEntry[]>>(
+                        (acc, f) => {
+                          const key = f.level ?? "__none__";
+                          if (!acc.has(key)) acc.set(key, []);
+                          acc.get(key)!.push(f);
+                          return acc;
+                        },
+                        new Map()
+                      );
+
+                      return (
+                        <div className="mt-auto pt-3 border-t border-line">
+                          <div className="text-[10.5px] font-bold tracking-wider uppercase text-ink-subtle mb-2">
+                            {dict.students.facultyTitle}
+                          </div>
+                          <div className="space-y-2">
+                            {Array.from(groups.entries()).map(([key, list]) => (
+                              <div key={key}>
+                                {hasLevels && key !== "__none__" && (
+                                  <div className="mb-1 text-[10.5px] font-bold text-brand-600">
+                                    {key}
+                                  </div>
+                                )}
+                                <div className="flex flex-wrap gap-1">
+                                  {list.map((f, i) => (
+                                    <span
+                                      key={i}
+                                      className="inline-flex items-center gap-1 bg-brand-50 px-1.5 py-0.5 text-[11px] font-semibold text-navy"
+                                    >
+                                      {f.name}
+                                      {f.count > 0 && (
+                                        <span className="font-display font-extrabold text-brand">
+                                          {f.count}
+                                        </span>
+                                      )}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                 </div>
               </div>
             ))}
