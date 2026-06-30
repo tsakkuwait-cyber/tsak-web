@@ -94,7 +94,7 @@ function PhotoCard({
       className={[
         "flex flex-col overflow-hidden transition-shadow hover:shadow-soft",
         isPresident
-          ? "md:col-span-2 border-2 border-brand bg-navy text-white"
+          ? "border-2 border-brand bg-navy text-white"
           : "border border-line bg-white",
       ].join(" ")}
     >
@@ -169,7 +169,7 @@ function NameCard({
       className={[
         "flex flex-col gap-3 transition-shadow hover:shadow-card",
         isPresident
-          ? "md:col-span-2 border-2 border-brand bg-navy text-white p-7"
+          ? "border-2 border-brand bg-navy text-white p-7"
           : "border border-line border-l-[3px] border-l-brand bg-white p-5",
       ].join(" ")}
     >
@@ -228,8 +228,8 @@ function CouncilSection({
         <span className="flex-1 h-px bg-line" />
       </div>
 
-      {/* Grid: 2-3 cols (มือถือ 1, tablet 2, desktop 3) — ประธาน span 2 */}
-      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+      {/* Grid: มือถือ 1 col / ตั้งแต่ tablet ขึ้น 2 cols (ทุกการ์ดขนาดเท่ากัน) */}
+      <div className="grid gap-4 sm:grid-cols-2">
         {members.map((m, idx) => (
           <Card key={m.id} m={m} variant={idx === 0 ? "president" : "default"} />
         ))}
