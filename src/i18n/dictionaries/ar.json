@@ -10,7 +10,7 @@
   },
   "nav": {
     "home": "الرئيسية",
-    "students": "الطلاب",
+    "students": "مجتمعنا",
     "activities": "الأنشطة",
     "contact": "اتصل بنا"
   },
@@ -45,8 +45,19 @@
     "langNote": "متوفر بالتايلاندية · الإنجليزية · العربية"
   },
   "students": {
-    "kicker": "الطلاب الحاليون",
+    "kicker": "مجتمعنا",
     "title": "الطلبة التايلانديون في دولة الكويت",
+    "institutionsTitle": "أين ندرس",
+    "highlightsTitle": "قصص وإنجازات",
+    "highlightsIntro": "أبرز ما يقدمه أعضاؤنا — منح دراسية وجوائز وتخرج وقصص ملهمة",
+    "filterAll": "الكل",
+    "noHighlights": "لا توجد قصص بعد",
+    "typeGraduation": "تخرج",
+    "typeScholarship": "منحة دراسية",
+    "typeAward": "جائزة",
+    "typeWelcome": "ترحيب",
+    "typeStory": "قصة",
+    "typeVolunteer": "متطوع",
     "intro": "يبلغ عدد الطلبة التايلانديين حالياً 58 طالباً (29 ذكوراً · 29 إناثاً) موزّعين على 4 مؤسسات في دولة الكويت.",
     "totalLabel": "إجمالي الطلبة التايلانديين",
     "maleLabel": "ذكور",

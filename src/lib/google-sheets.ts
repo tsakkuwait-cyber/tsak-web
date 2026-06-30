@@ -246,6 +246,26 @@ export interface CouncilMember {
   line: string;
 }
 
+export type HighlightType =
+  | "graduation"
+  | "scholarship"
+  | "award"
+  | "welcome"
+  | "story"
+  | "volunteer";
+
+export interface HighlightItem {
+  id: string;
+  year: string;
+  type: HighlightType;
+  name: string;
+  institution: string;
+  major: string;
+  photoUrl: string;
+  headline: string;
+  story: string;
+}
+
 export interface ChannelItem {
   key: string;
   /** อีโมจิ/ตัวอักษรย่อ ใช้แสดงในไอคอนกล่อง */
@@ -327,6 +347,40 @@ export async function getChannels(locale: Locale): Promise<ChannelItem[]> {
       value: r.value ?? "",
       href: r.href ?? "",
     }));
+}
+
+/**
+ * อ่าน highlights/spotlights/achievements รวมในตารางเดียว (tab "highlights")
+ * Schema:
+ *   id | year | type | name | institution | major
+ *   | headline_th/en/ar | story_th/en/ar | photo_url | published
+ *
+ * type values: graduation | scholarship | award | welcome | story | volunteer
+ */
+export async function getHighlights(locale: Locale): Promise<HighlightItem[]> {
+  const rows = await getSheet("highlights");
+  return rows
+    .filter((r) => (r.published ?? "TRUE").toUpperCase() !== "FALSE")
+    .map((r) => {
+      const t = (r.type ?? "story").toLowerCase();
+      const type: HighlightType = (
+        ["graduation", "scholarship", "award", "welcome", "story", "volunteer"].includes(t)
+          ? t
+          : "story"
+      ) as HighlightType;
+      return {
+        id: r.id,
+        year: r.year ?? "",
+        type,
+        name: r.name ?? "",
+        institution: r.institution ?? "",
+        major: r.major ?? "",
+        photoUrl: normalizeImageUrl(r.photo_url ?? ""),
+        headline: r[`headline_${locale}`] ?? r.headline_th ?? r.headline_en ?? "",
+        story: r[`story_${locale}`] ?? r.story_th ?? r.story_en ?? "",
+      };
+    })
+    .sort((a, b) => (a.year < b.year ? 1 : -1));
 }
 
 /**

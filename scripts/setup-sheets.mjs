@@ -140,6 +140,19 @@ const activitiesData = [
   ["5", "2025-06-20", "", "TRUE", "ฟุตบอลสานสัมพันธ์", tr("E", 6, "en"), tr("E", 6, "ar"), "แข่งฟุตบอลกับนักศึกษานานาชาติ — เฉพาะนักศึกษาชาย", tr("H", 6, "en"), tr("H", 6, "ar"), "GUST Sports Complex", tr("K", 6, "en"), tr("K", 6, "ar"), "male"],
 ];
 
+/** Tab: highlights — เรื่องราว/ผลงาน/รางวัล/น้องใหม่ รวมในตารางเดียว
+ *  type values: graduation | scholarship | award | welcome | story | volunteer
+ */
+const highlightsData = [
+  ["id", "year", "type", "name", "institution", "major", "headline_th", "headline_en", "headline_ar", "story_th", "story_en", "story_ar", "photo_url", "published"],
+  ["1", "2026", "graduation", "นายภานุ ใจดี", "Kuwait University", "วิศวกรรมศาสตร์", "จบการศึกษาด้วยเกียรตินิยมอันดับ 1", tr("G", 2, "en"), tr("G", 2, "ar"), "เป็นนักศึกษาไทยคนแรกที่จบ KU ด้วยเกียรตินิยมในสาขานี้", tr("J", 2, "en"), tr("J", 2, "ar"), "", "TRUE"],
+  ["2", "2026", "scholarship", "นางสาวสุดา ดีงาม", "GUST", "บริหารธุรกิจ", "ได้รับทุนการศึกษาเต็มจำนวน", tr("G", 3, "en"), tr("G", 3, "ar"), "ทุนการศึกษา 4 ปี จาก GUST Foundation สำหรับนักศึกษาต่างชาติดีเด่น", tr("J", 3, "en"), tr("J", 3, "ar"), "", "TRUE"],
+  ["3", "2025", "award", "นายธนัท สมาร์ท", "PAAET", "เทคโนโลยี", "ชนะการแข่งขัน Hackathon ระดับภูมิภาค", tr("G", 4, "en"), tr("G", 4, "ar"), "ตัวแทนจาก PAAET คว้ารางวัลที่ 1 ในการแข่งขัน Gulf Tech Hackathon", tr("J", 4, "en"), tr("J", 4, "ar"), "", "TRUE"],
+  ["4", "2025", "welcome", "น้องใหม่ปี 2025", "KU / PAAET / มัธยม", "หลายสาขา", "ต้อนรับน้องใหม่ 12 คน", tr("G", 5, "en"), tr("G", 5, "ar"), "ปีการศึกษานี้ มีนักศึกษาไทยใหม่เข้าเรียนใน 4 สถาบัน รวม 12 คน", tr("J", 5, "en"), tr("J", 5, "ar"), "", "TRUE"],
+  ["5", "2025", "story", "นางสาวพิมพ์ใจ มีเงิน", "AUK", "การออกแบบ", "ผู้หญิงไทยคนแรกที่จบ AUK ด้วยเกียรตินิยม", tr("G", 6, "en"), tr("G", 6, "ar"), "เรื่องราวการต่อสู้ในต่างแดน — จากเด็กบ้านนอกสู่นักออกแบบรุ่นใหม่", tr("J", 6, "en"), tr("J", 6, "ar"), "", "TRUE"],
+  ["6", "2025", "volunteer", "นายเก่ง พูดเก่ง", "KU", "รัฐศาสตร์", "อาสาสมัครดีเด่นประจำปี", tr("G", 7, "en"), tr("G", 7, "ar"), "อาสาช่วยน้องใหม่กว่า 20 คนตั้งแต่เข้าเรียน — เป็นแบบอย่างของรุ่นพี่ที่ดี", tr("J", 7, "en"), tr("J", 7, "ar"), "", "TRUE"],
+];
+
 const TABS = {
   stats: statsData,
   content: contentData,
@@ -147,6 +160,7 @@ const TABS = {
   committee: committeeData,
   channels: channelsData,
   activities: activitiesData,
+  highlights: highlightsData,
 };
 
 // ════════════════════════════════════════════════════════════════

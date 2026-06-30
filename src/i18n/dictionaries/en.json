@@ -10,7 +10,7 @@
   },
   "nav": {
     "home": "Home",
-    "students": "Students",
+    "students": "Our Community",
     "activities": "Activities",
     "contact": "Contact"
   },
@@ -45,8 +45,19 @@
     "langNote": "Available in Thai · English · Arabic"
   },
   "students": {
-    "kicker": "Current Students",
+    "kicker": "Our Community",
     "title": "Thai Students in the State of Kuwait",
+    "institutionsTitle": "Where we study",
+    "highlightsTitle": "Stories & Achievements",
+    "highlightsIntro": "Highlights from our members — scholarships, awards, graduations, and remarkable stories",
+    "filterAll": "All",
+    "noHighlights": "No stories yet",
+    "typeGraduation": "Graduation",
+    "typeScholarship": "Scholarship",
+    "typeAward": "Award",
+    "typeWelcome": "Welcome",
+    "typeStory": "Story",
+    "typeVolunteer": "Volunteer",
     "intro": "There are currently 58 Thai students (29 male · 29 female) enrolled across 4 institutions in the State of Kuwait.",
     "totalLabel": "Total Thai students",
     "maleLabel": "Male",

@@ -1,19 +1,34 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { getInstitutions, getStats } from "@/lib/google-sheets";
-import { KuwaitMap } from "@/components/KuwaitMap";
+import {
+  getInstitutions,
+  getStats,
+  getHighlights,
+  type HighlightType,
+} from "@/lib/google-sheets";
 
 /**
- * Students page
- *   1. HERO — ไม่ระบุตัวเลขซ้ำ (อยู่ใน stats ด้านขวาแล้ว) + bg pattern
- *   2. KUWAIT MAP + INSTITUTION DETAIL
- *   (3.) Achievements placeholder — รอข้อมูล
+ * Our Community page
+ *   1. HERO — community-focused title + stats
+ *   2. Institution grid (แทน map) — 4 cards พร้อม logo + จำนวน
+ *   3. Highlights — เรื่องราว/ผลงาน/รางวัล filter ได้ตาม type
  */
 
 export const revalidate = Number(
   process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 60
 );
+
+// สี chip ของ highlight แต่ละ type
+const TYPE_STYLE: Record<HighlightType, { bg: string; text: string }> = {
+  graduation: { bg: "bg-[#E1F4F1]", text: "text-[#0B7068]" },
+  scholarship: { bg: "bg-[#FBF3D6]", text: "text-[#7A5A00]" },
+  award: { bg: "bg-[#FBEEF2]", text: "text-[#B0395A]" },
+  welcome: { bg: "bg-brand-50", text: "text-navy" },
+  story: { bg: "bg-[#EAF0FB]", text: "text-[#1F55C8]" },
+  volunteer: { bg: "bg-[#F4ECE5]", text: "text-[#7A4A1F]" },
+};
 
 export default async function StudentsPage({
   params,
@@ -23,10 +38,11 @@ export default async function StudentsPage({
   if (!isLocale(params.locale)) notFound();
   const locale: Locale = params.locale;
 
-  const [dict, stats, institutions] = await Promise.all([
+  const [dict, stats, institutions, highlights] = await Promise.all([
     getDictionary(locale),
     getStats(locale),
     getInstitutions(locale),
+    getHighlights(locale),
   ]);
 
   const statByKey = Object.fromEntries(stats.map((s) => [s.key, s]));
@@ -34,13 +50,15 @@ export default async function StudentsPage({
   const male = statByKey["male"]?.display ?? "—";
   const female = statByKey["female"]?.display ?? "—";
 
+  // helper — type label
+  const d = dict.students as Record<string, string>;
+  const typeLabel = (t: HighlightType) =>
+    d[`type${t.charAt(0).toUpperCase()}${t.slice(1)}`] ?? t;
+
   return (
     <>
-      {/* ════════════════════════════════════════════════════
-            HERO — clean copy + decorative pattern bg
-         ════════════════════════════════════════════════════ */}
+      {/* ════════════════ HERO ════════════════ */}
       <section className="relative overflow-hidden bg-navy text-white">
-        {/* Decorative grid pattern */}
         <div
           className="absolute inset-0 pointer-events-none opacity-[0.07]"
           style={{
@@ -49,33 +67,12 @@ export default async function StudentsPage({
             backgroundSize: "40px 40px",
           }}
         />
-        {/* Hero glow */}
         <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
-        {/* Kuwait outline decorative */}
-        <svg
-          viewBox="0 0 100 100"
-          className="absolute -end-12 -bottom-16 pointer-events-none"
-          style={{
-            width: "min(46vw, 480px)",
-            height: "min(46vw, 480px)",
-            opacity: 0.12,
-          }}
-        >
-          <path
-            d="M 12 14 L 38 12 L 60 11 L 68 13 L 70 22 L 72 30 L 64 38 L 56 44 L 64 48 L 72 52 L 76 62 L 74 75 L 68 83 L 50 85 L 28 82 L 12 75 L 8 52 L 10 30 Z"
-            fill="none"
-            stroke="#7FD8CF"
-            strokeWidth="1"
-            strokeLinejoin="round"
-          />
-        </svg>
 
         <div className="container relative flex flex-wrap items-end justify-between gap-8 py-[clamp(52px,7vw,84px)]">
           <div className="flex-1 basis-[440px] min-w-[300px]">
             <div className="mb-[18px] flex items-center gap-3.5">
-              <span className="font-display text-[14px] font-extrabold text-brand-200">
-                01
-              </span>
+              <span className="font-display text-[14px] font-extrabold text-brand-200">01</span>
               <span className="text-[12.5px] font-bold tracking-[0.14em] uppercase text-brand-200">
                 {dict.nav.students}
               </span>
@@ -85,7 +82,6 @@ export default async function StudentsPage({
             </h1>
           </div>
 
-          {/* Stats block — single source of truth */}
           <div className="flex flex-none items-end gap-[clamp(20px,3vw,32px)]">
             <div>
               <div className="font-display text-[clamp(56px,8vw,84px)] font-extrabold leading-[0.9] text-brand-200">
@@ -97,48 +93,212 @@ export default async function StudentsPage({
             </div>
             <div className="flex flex-col gap-2 pb-1.5">
               <div className="flex items-baseline gap-2">
-                <span className="font-display text-[22px] font-extrabold text-white">
-                  {male}
-                </span>
-                <span className="text-[12.5px] text-[#BBDCD9]">
-                  {dict.students.maleLabel}
-                </span>
+                <span className="font-display text-[22px] font-extrabold text-white">{male}</span>
+                <span className="text-[12.5px] text-[#BBDCD9]">{dict.students.maleLabel}</span>
               </div>
               <div className="h-px w-16 bg-white/20" />
               <div className="flex items-baseline gap-2">
-                <span className="font-display text-[22px] font-extrabold text-white">
-                  {female}
-                </span>
-                <span className="text-[12.5px] text-[#BBDCD9]">
-                  {dict.students.femaleLabel}
-                </span>
+                <span className="font-display text-[22px] font-extrabold text-white">{female}</span>
+                <span className="text-[12.5px] text-[#BBDCD9]">{dict.students.femaleLabel}</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════
-            KUWAIT MAP + INSTITUTION DETAIL
-         ════════════════════════════════════════════════════ */}
-      <section className="container py-[clamp(40px,5vw,68px)]">
+      {/* ════════════════ INSTITUTIONS GRID ════════════════ */}
+      <section className="container py-[clamp(48px,7vw,80px)]">
+        <div className="mb-7 flex items-center gap-4">
+          <span className="font-display text-[15px] font-extrabold text-brand">02</span>
+          <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
+            {d.institutionsTitle ?? "Where we study"}
+          </span>
+          <span className="flex-1 h-px bg-line" />
+        </div>
+
         {institutions.length === 0 ? (
           <div className="border border-dashed border-line bg-white p-10 text-center text-ink-muted">
             {dict.students.comingSoon}
           </div>
         ) : (
-          <KuwaitMap
-            institutions={institutions}
-            labels={{
-              mapNote: dict.students.mapNote ?? "Kuwait map",
-              gulf: dict.students.gulf ?? "Arabian Gulf",
-              studentsLabel: dict.students.studentsLabel,
-              areaLabel: dict.students.areaLabel ?? "Area",
-              facultyTitle: dict.students.facultyTitle ?? "Faculty",
-              websiteLabel: dict.students.websiteLabel ?? "Website",
-            }}
-          />
+          <div
+            className="grid gap-5"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}
+          >
+            {institutions.map((inst) => (
+              <div
+                key={inst.id}
+                className="flex flex-col overflow-hidden border border-line bg-white transition-shadow hover:shadow-card"
+              >
+                {/* Cover photo or gradient */}
+                <div
+                  className="relative bg-gradient-to-br from-navy via-navy-dark to-brand-900"
+                  style={{ aspectRatio: "16 / 9" }}
+                >
+                  {inst.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={inst.imageUrl}
+                      alt={inst.name}
+                      referrerPolicy="no-referrer"
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 grid place-items-center text-[#BBDCD9] text-[10px] font-mono opacity-50">
+                      [ {inst.short} ]
+                    </div>
+                  )}
+                  <span className="absolute top-3 start-3 inline-block bg-navy/85 backdrop-blur-sm px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase text-brand-200">
+                    {inst.type}
+                  </span>
+                </div>
+
+                <div className="flex flex-1 flex-col gap-3 p-5">
+                  <div className="flex items-start gap-3">
+                    {inst.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={inst.logoUrl}
+                        alt=""
+                        referrerPolicy="no-referrer"
+                        className="h-11 w-11 flex-none object-contain"
+                      />
+                    ) : (
+                      <span className="grid h-11 w-11 flex-none place-items-center bg-brand-50 text-[11px] font-extrabold text-navy">
+                        {inst.short}
+                      </span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-[15px] font-bold leading-tight text-navy line-clamp-2">
+                        {inst.name}
+                      </h3>
+                      {inst.area && (
+                        <p className="mt-0.5 text-[12px] text-ink-muted">📍 {inst.area}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-auto flex items-baseline justify-between">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-display text-[28px] font-extrabold text-brand leading-none">
+                        {inst.studentsCount}
+                      </span>
+                      <span className="text-[12px] text-ink-muted">
+                        {dict.students.studentsLabel}
+                      </span>
+                    </div>
+                    {inst.website && (
+                      <a
+                        href={inst.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[12px] font-bold text-brand hover:text-brand-600"
+                      >
+                        {dict.students.websiteLabel ?? "Website"} →
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
+      </section>
+
+      {/* ════════════════ HIGHLIGHTS ════════════════ */}
+      <section className="bg-white border-t border-line">
+        <div className="container py-[clamp(48px,7vw,84px)]">
+          <div className="mb-2 flex items-center gap-4">
+            <span className="font-display text-[15px] font-extrabold text-brand">03</span>
+            <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
+              {d.highlightsTitle ?? "Highlights"}
+            </span>
+            <span className="flex-1 h-px bg-line" />
+          </div>
+          <p className="mb-8 max-w-[62ch] text-[15px] leading-[1.8] text-ink-soft">
+            {d.highlightsIntro}
+          </p>
+
+          {highlights.length === 0 ? (
+            <div className="border border-dashed border-line p-10 text-center text-ink-muted">
+              {d.noHighlights}
+            </div>
+          ) : (
+            <div
+              className="grid gap-6"
+              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}
+            >
+              {highlights.map((h) => {
+                const style = TYPE_STYLE[h.type];
+                return (
+                  <article
+                    key={h.id}
+                    className="flex flex-col overflow-hidden border border-line bg-white transition-shadow hover:shadow-card"
+                  >
+                    {/* Photo */}
+                    <div
+                      className="relative bg-gradient-to-br from-brand-50 to-brand-100"
+                      style={{ aspectRatio: "4 / 3" }}
+                    >
+                      {h.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={h.photoUrl}
+                          alt={h.name}
+                          referrerPolicy="no-referrer"
+                          className="absolute inset-0 h-full w-full object-cover"
+                          style={{ objectPosition: "center 20%" }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 grid place-items-center">
+                          <span className="font-display text-[60px] font-extrabold text-brand-600/25">
+                            {h.name.slice(0, 1)}
+                          </span>
+                        </div>
+                      )}
+                      {/* Type chip + year */}
+                      <div className="absolute top-3 start-3 flex items-center gap-2">
+                        <span
+                          className={`inline-block px-2.5 py-1 text-[11px] font-bold ${style.bg} ${style.text}`}
+                        >
+                          {typeLabel(h.type)}
+                        </span>
+                        {h.year && (
+                          <span className="font-display text-[11px] font-bold text-white bg-navy/70 backdrop-blur-sm px-2 py-1">
+                            {h.year}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Body */}
+                    <div className="flex flex-1 flex-col p-5">
+                      <h3 className="text-[17px] font-extrabold leading-snug text-navy line-clamp-2">
+                        {h.headline}
+                      </h3>
+                      <div className="mt-1 text-[12.5px] font-semibold text-brand-600">
+                        {h.name}
+                        {h.institution && (
+                          <span className="text-ink-muted font-medium">
+                            {" "}· {h.institution}
+                          </span>
+                        )}
+                        {h.major && (
+                          <span className="text-ink-muted font-medium"> · {h.major}</span>
+                        )}
+                      </div>
+                      {h.story && (
+                        <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft line-clamp-3">
+                          {h.story}
+                        </p>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </section>
     </>
   );
