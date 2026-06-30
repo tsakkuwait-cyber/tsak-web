@@ -89,6 +89,12 @@
   "common": {
     "loading": "Loading...",
     "language": "Language",
-    "readMore": "Read more"
+    "readMore": "Read more",
+    "devNotice": "Site under development — full launch coming soon"
+  },
+  "comingSoon": {
+    "badge": "Coming Soon",
+    "message": "The official website of the Thai Student Association in the State of Kuwait is launching soon. Thank you for your interest!",
+    "contactLabel": "Urgent contact:"
   }
 }

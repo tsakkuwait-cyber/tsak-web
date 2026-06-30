@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import { Cairo, Prompt, Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -14,6 +15,7 @@ import {
 import { getDictionary } from "@/i18n/get-dictionary";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { ComingSoon } from "@/components/ComingSoon";
 
 /* ------------------------------------------------------------
  *  Font loading (next/font/google)
@@ -91,6 +93,17 @@ export default async function LocaleLayout({
 
   const dict = await getDictionary(locale);
 
+  // ⚠️ Toggle "Coming Soon" mode
+  //   - ตั้งใน Vercel env var: NEXT_PUBLIC_SITE_STATUS=coming_soon
+  //   - เปิดเว็บจริง: ลบ env var ออก
+  //   - Bypass สำหรับ preview: ใส่ ?preview=PREVIEW_KEY ใน URL ครั้งเดียว (cookie 30 วัน)
+  const previewKey = process.env.PREVIEW_KEY;
+  const cookieStore = cookies();
+  const hasPreviewCookie =
+    !!previewKey && cookieStore.get("tsak_preview")?.value === previewKey;
+  const isComingSoon =
+    process.env.NEXT_PUBLIC_SITE_STATUS === "coming_soon" && !hasPreviewCookie;
+
   return (
     <html
       lang={locale}
@@ -99,12 +112,16 @@ export default async function LocaleLayout({
       style={{ ["--font-active" as string]: activeFontVar }}
     >
       <body className="min-h-screen flex flex-col">
-        <Navbar locale={locale} dict={dict} />
-        <main className="flex-1">{children}</main>
-        <Footer locale={locale} dict={dict} />
-        {/* Vercel Analytics — เก็บสถิติเข้าชม (เห็นใน Vercel dashboard หลัง deploy) */}
+        {isComingSoon ? (
+          <ComingSoon locale={locale} dict={dict} />
+        ) : (
+          <>
+            <Navbar locale={locale} dict={dict} />
+            <main className="flex-1">{children}</main>
+            <Footer locale={locale} dict={dict} />
+          </>
+        )}
         <Analytics />
-        {/* Speed Insights — เก็บ Core Web Vitals (ความเร็วเว็บ) */}
         <SpeedInsights />
       </body>
     </html>
