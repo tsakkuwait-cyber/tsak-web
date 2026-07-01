@@ -221,7 +221,14 @@ export default async function StudentsPage({
           ) : (
             <HighlightsGallery
               highlights={highlights}
-              typeLabel={typeLabel}
+              typeLabels={{
+                graduation: d.typeGraduation ?? "Graduation",
+                scholarship: d.typeScholarship ?? "Scholarship",
+                award: d.typeAward ?? "Award",
+                welcome: d.typeWelcome ?? "Welcome",
+                story: d.typeStory ?? "Story",
+                volunteer: d.typeVolunteer ?? "Volunteer",
+              }}
               closeLabel="Close"
             />
           )}

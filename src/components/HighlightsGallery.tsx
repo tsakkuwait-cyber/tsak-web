@@ -21,13 +21,15 @@ const TYPE_STYLE: Record<HighlightType, { bg: string; text: string }> = {
  */
 export function HighlightsGallery({
   highlights,
-  typeLabel,
+  typeLabels,
   closeLabel,
 }: {
   highlights: HighlightItem[];
-  typeLabel: (t: HighlightType) => string;
+  /** Object mapping type → label — ผ่านจาก Server Component ได้ (function ผ่านไม่ได้) */
+  typeLabels: Record<HighlightType, string>;
   closeLabel: string;
 }) {
+  const typeLabel = (t: HighlightType) => typeLabels[t] ?? t;
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const isOpen = openIdx !== null;
   const total = highlights.length;
