@@ -79,15 +79,21 @@ export default async function StudentsPage({
     <>
       {/* ════════════════ HERO ════════════════ */}
       <section className="relative overflow-hidden bg-navy text-white">
+        <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.07]"
+          className="absolute -top-32 -end-32 w-[500px] h-[500px] rounded-full pointer-events-none"
           style={{
-            backgroundImage:
-              "linear-gradient(rgba(127,216,207,1) 1px, transparent 1px), linear-gradient(90deg, rgba(127,216,207,1) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
+            background:
+              "radial-gradient(closest-side, rgba(16,150,141,0.28), transparent)",
           }}
         />
-        <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
+        <div
+          className="absolute -bottom-40 -start-40 w-[420px] h-[420px] rounded-full pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(127,216,207,0.14), transparent)",
+          }}
+        />
 
         <div className="container relative flex flex-wrap items-end justify-between gap-8 py-[clamp(52px,7vw,84px)]">
           <div className="flex-1 basis-[440px] min-w-[300px]">

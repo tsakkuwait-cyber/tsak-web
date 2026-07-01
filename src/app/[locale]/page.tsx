@@ -85,29 +85,27 @@ export default async function HomePage({
             HERO
          ════════════════════════════════════════════════════ */}
       <section className="relative overflow-hidden bg-navy text-white">
-        {/* Layered backgrounds */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.06]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(127,216,207,1) 1px, transparent 1px), linear-gradient(90deg, rgba(127,216,207,1) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
+        {/* Soft glow + orbs (ไม่มี grid pattern แล้ว — ดู elegant กว่า) */}
         <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
-        {/* Soft gradient orbs */}
         <div
-          className="absolute -top-40 -end-40 w-[540px] h-[540px] rounded-full pointer-events-none"
+          className="absolute -top-40 -end-40 w-[640px] h-[640px] rounded-full pointer-events-none"
           style={{
             background:
-              "radial-gradient(closest-side, rgba(16,150,141,0.28), transparent)",
+              "radial-gradient(closest-side, rgba(16,150,141,0.32), transparent)",
           }}
         />
         <div
-          className="absolute -bottom-60 -start-60 w-[600px] h-[600px] rounded-full pointer-events-none"
+          className="absolute -bottom-60 -start-60 w-[720px] h-[720px] rounded-full pointer-events-none"
           style={{
             background:
-              "radial-gradient(closest-side, rgba(127,216,207,0.16), transparent)",
+              "radial-gradient(closest-side, rgba(127,216,207,0.14), transparent)",
+          }}
+        />
+        <div
+          className="absolute top-1/3 start-1/2 w-[400px] h-[400px] rounded-full pointer-events-none opacity-30"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(16,150,141,0.18), transparent)",
           }}
         />
         {/* Kuwait skyline silhouette — bottom-anchored full width
@@ -207,24 +205,30 @@ export default async function HomePage({
             </div>
           </div>
 
-          {/* RIGHT — hero photo frame (3:2 = สมส่วนกว่ารูปกลุ่ม) */}
-          <div className="relative lg:justify-self-end w-full max-w-[520px] mx-auto lg:mx-0">
-            <div className="relative aspect-[3/2] border-2 border-brand-200/40 overflow-hidden group">
-              {/* Decorative border corners */}
-              <span className="absolute top-0 start-0 h-6 w-6 border-t-[3px] border-s-[3px] border-brand z-10" />
-              <span className="absolute top-0 end-0 h-6 w-6 border-t-[3px] border-e-[3px] border-brand z-10" />
-              <span className="absolute bottom-0 start-0 h-6 w-6 border-b-[3px] border-s-[3px] border-brand z-10" />
-              <span className="absolute bottom-0 end-0 h-6 w-6 border-b-[3px] border-e-[3px] border-brand z-10" />
-
-              {heroPhotoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
+          {/* RIGHT — hero photo (ไม่มีกรอบ ไม่จำกัด ratio ให้รูปเด่นเต็มที่) */}
+          <div className="relative lg:justify-self-end w-full max-w-[640px] mx-auto lg:mx-0">
+            {heroPhotoUrl ? (
+              <div className="relative group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={heroPhotoUrl}
                   alt="TSAK members"
                   referrerPolicy="no-referrer"
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
+                  className="w-full h-auto shadow-2xl shadow-black/40 transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]"
                 />
-              ) : (
+                {/* info card floating — ล่างซ้าย */}
+                <div className="hidden sm:block absolute -bottom-5 start-5 bg-white text-navy px-4 py-3 shadow-xl">
+                  <div className="text-[10.5px] font-bold tracking-wider uppercase text-brand-600">
+                    {dict.home.heroBadge}
+                  </div>
+                  <div className="font-display text-[22px] font-extrabold text-brand leading-none mt-1">
+                    {statByKey["members"]?.display ?? "58"}+
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // Placeholder ใช้ aspect 3:2 (เพราะยังไม่มีรูป)
+              <div className="relative aspect-[3/2] border-2 border-brand-200/40 overflow-hidden">
                 <div
                   className="absolute inset-0 grid place-items-center"
                   style={{
@@ -235,21 +239,12 @@ export default async function HomePage({
                   <div className="text-center px-6">
                     <div className="font-display text-[48px] mb-2">👥</div>
                     <div className="font-mono text-[12px] text-brand-200/85">
-                      [ ใส่รูปกลุ่มสมาชิกใน sheet content: hero_photo_url ]
+                      [ ใส่รูปกลุ่มใน sheet content: hero_photo_url ]
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-            {/* small info card floating */}
-            <div className="hidden sm:block absolute -bottom-5 start-5 bg-white text-navy px-4 py-3 shadow-lg">
-              <div className="text-[10.5px] font-bold tracking-wider uppercase text-brand-600">
-                {dict.home.heroBadge}
               </div>
-              <div className="font-display text-[22px] font-extrabold text-brand leading-none mt-1">
-                {statByKey["members"]?.display ?? "58"}+
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -426,12 +421,19 @@ export default async function HomePage({
 
       {/* ════════════════ CTA BAND — with reasons ════════════════ */}
       <section className="relative bg-navy text-white overflow-hidden">
+        {/* Soft orbs — elegant, not tech */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.06]"
+          className="absolute -top-32 -end-32 w-[420px] h-[420px] rounded-full pointer-events-none"
           style={{
-            backgroundImage:
-              "linear-gradient(rgba(127,216,207,1) 1px, transparent 1px), linear-gradient(90deg, rgba(127,216,207,1) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
+            background:
+              "radial-gradient(closest-side, rgba(16,150,141,0.25), transparent)",
+          }}
+        />
+        <div
+          className="absolute -bottom-32 -start-32 w-[380px] h-[380px] rounded-full pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(127,216,207,0.12), transparent)",
           }}
         />
         <div className="container relative py-[clamp(52px,8vw,88px)]">

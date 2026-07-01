@@ -18,16 +18,22 @@ export function ComingSoon({
 }) {
   return (
     <div className="relative min-h-screen flex flex-col bg-navy text-white overflow-hidden">
-      {/* Decorative pattern + glow */}
+      {/* Soft glow + orbs — elegant */}
+      <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.07]"
+        className="absolute -top-40 -end-40 w-[560px] h-[560px] rounded-full pointer-events-none"
         style={{
-          backgroundImage:
-            "linear-gradient(rgba(127,216,207,1) 1px, transparent 1px), linear-gradient(90deg, rgba(127,216,207,1) 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
+          background:
+            "radial-gradient(closest-side, rgba(16,150,141,0.3), transparent)",
         }}
       />
-      <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
+      <div
+        className="absolute -bottom-40 -start-40 w-[520px] h-[520px] rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(closest-side, rgba(127,216,207,0.14), transparent)",
+        }}
+      />
       {/* Kuwait outline */}
       <svg
         viewBox="0 0 100 100"
