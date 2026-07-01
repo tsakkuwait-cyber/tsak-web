@@ -9,6 +9,7 @@ import {
   type HighlightType,
 } from "@/lib/google-sheets";
 import { InstitutionCard } from "@/components/InstitutionCard";
+import { HighlightsGallery } from "@/components/HighlightsGallery";
 
 /**
  * Our Community page
@@ -218,62 +219,11 @@ export default async function StudentsPage({
               {d.noHighlights}
             </div>
           ) : (
-            <div className="grid gap-3 lg:grid-cols-2">
-              {highlights.map((h) => {
-                const style = TYPE_STYLE[h.type];
-                return (
-                  <article
-                    key={h.id}
-                    className="flex items-stretch gap-0 border border-line bg-white overflow-hidden transition-shadow hover:shadow-card"
-                  >
-                    {/* Thumbnail square */}
-                    <div className="relative flex-none w-[92px] sm:w-[110px] bg-gradient-to-br from-brand-50 to-brand-100">
-                      {h.photoUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={h.photoUrl}
-                          alt={h.name}
-                          referrerPolicy="no-referrer"
-                          className="absolute inset-0 h-full w-full object-cover"
-                          style={{ objectPosition: "center 20%" }}
-                        />
-                      ) : (
-                        <div className="absolute inset-0 grid place-items-center">
-                          <span className="font-display text-[36px] font-extrabold text-brand-600/30">
-                            {h.name.slice(0, 1)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Body — compact list */}
-                    <div className="flex flex-1 flex-col justify-center p-3.5 min-w-0">
-                      <div className="mb-1 flex items-center gap-2">
-                        <span
-                          className={`inline-block px-2 py-0.5 text-[10.5px] font-bold ${style.bg} ${style.text}`}
-                        >
-                          {typeLabel(h.type)}
-                        </span>
-                        {h.year && (
-                          <span className="font-display text-[11px] font-bold text-ink-muted">
-                            · {h.year}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-[14.5px] font-extrabold leading-tight text-navy line-clamp-2">
-                        {h.headline}
-                      </h3>
-                      <div className="mt-1 text-[12px] font-semibold text-brand-600 truncate">
-                        {h.name}
-                        {h.institution && (
-                          <span className="text-ink-muted font-medium"> · {h.institution}</span>
-                        )}
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+            <HighlightsGallery
+              highlights={highlights}
+              typeLabel={typeLabel}
+              closeLabel="Close"
+            />
           )}
         </div>
       </section>
