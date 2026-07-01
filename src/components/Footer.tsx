@@ -1,22 +1,21 @@
 import Link from "next/link";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
-import { getChannels } from "@/lib/google-sheets";
+import type { ChannelItem } from "@/lib/google-sheets";
 
 /**
  * Footer — dark navy 4 columns
- *  - Column 1: brand + about
- *  - Column 2: quick links
- *  - Column 3: contact (จาก channels sheet — dynamic)
- *  - Column 4: follow / lang note
- *  - Bottom: rights + developer credit
+ *   - รับ channels เป็น prop (ให้ layout fetch มาจาก sheet)
+ *   - Bottom: rights + developer credit
  */
-export async function Footer({
+export function Footer({
   locale,
   dict,
+  channels = [],
 }: {
   locale: Locale;
   dict: Dictionary;
+  channels?: ChannelItem[];
 }) {
   const year = new Date().getFullYear();
   const quickLinks = [
@@ -26,8 +25,6 @@ export async function Footer({
     { href: `/${locale}/contact`, label: dict.nav.contact },
   ];
 
-  // Pull contact channels from sheet (server-side)
-  const channels = await getChannels(locale);
   const contactChannels = channels.filter((ch) =>
     ["email", "phone", "address"].includes(ch.key)
   );
@@ -77,7 +74,7 @@ export async function Footer({
           </div>
         </div>
 
-        {/* Column 3 — Contact (from sheet) */}
+        {/* Column 3 — Contact (from sheet channels) */}
         <div>
           <div className="mb-4 text-[13px] font-bold uppercase tracking-wider text-brand-200">
             {dict.footer.contactT}
@@ -99,11 +96,16 @@ export async function Footer({
                     {content}
                   </a>
                 ) : (
-                  <span key={ch.key} className="truncate">{content}</span>
+                  <span key={ch.key} className="truncate">
+                    {content}
+                  </span>
                 );
               })
             ) : (
-              <span dir="auto">info@thaikuwait.org</span>
+              <>
+                <span dir="auto">info@thaikuwait.org</span>
+                <span dir="auto">{dict.footer.location}</span>
+              </>
             )}
           </div>
         </div>
@@ -144,7 +146,9 @@ export async function Footer({
               )}
             </div>
           ) : (
-            <p className="m-0 text-[13px] leading-relaxed">{dict.footer.langNote}</p>
+            <p className="m-0 text-[13px] leading-relaxed">
+              {dict.footer.langNote}
+            </p>
           )}
         </div>
       </div>

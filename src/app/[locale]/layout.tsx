@@ -13,6 +13,7 @@ import {
   type Locale,
 } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { getChannels } from "@/lib/google-sheets";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ComingSoon } from "@/components/ComingSoon";
@@ -91,7 +92,10 @@ export default async function LocaleLayout({
     ar: "var(--font-cairo)",
   }[locale];
 
-  const dict = await getDictionary(locale);
+  const [dict, channels] = await Promise.all([
+    getDictionary(locale),
+    getChannels(locale),
+  ]);
 
   // ⚠️ Toggle "Coming Soon" mode
   //   - ตั้งใน Vercel env var: NEXT_PUBLIC_SITE_STATUS=coming_soon
@@ -118,7 +122,7 @@ export default async function LocaleLayout({
           <>
             <Navbar locale={locale} dict={dict} />
             <main className="flex-1">{children}</main>
-            <Footer locale={locale} dict={dict} />
+            <Footer locale={locale} dict={dict} channels={channels} />
           </>
         )}
         <Analytics />
