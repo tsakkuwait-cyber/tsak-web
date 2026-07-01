@@ -110,25 +110,71 @@ export default async function HomePage({
               "radial-gradient(closest-side, rgba(127,216,207,0.16), transparent)",
           }}
         />
-        {/* Kuwait outline decorative */}
+        {/* Kuwait skyline silhouette — bottom-anchored full width
+            Kuwait Towers (iconic 3-sphere) + Liberation Tower + Al Hamra + city buildings */}
         <svg
-          viewBox="0 0 100 100"
-          className="absolute -end-8 -bottom-14 pointer-events-none"
-          style={{
-            width: "min(44vw, 500px)",
-            height: "min(44vw, 500px)",
-            opacity: 0.09,
-          }}
+          viewBox="0 0 1200 200"
+          preserveAspectRatio="xMidYEnd meet"
+          className="absolute inset-x-0 bottom-0 w-full pointer-events-none"
+          style={{ height: "min(30vh, 240px)", opacity: 0.16 }}
         >
-          <path
-            d="M 13 14 L 28 12 L 46 11 L 60 11 L 67 13 L 70 17 L 71 22 L 72 28 L 74 34 L 70 38 L 62 40 L 54 42 L 48 46 L 52 51 L 60 52 L 68 53 L 74 58 L 77 65 L 77 73 L 75 80 L 70 85 L 60 87 L 42 87 L 24 85 L 14 82 L 9 75 L 7 62 L 7 48 L 8 32 L 10 22 Z"
-            fill="none"
-            stroke="#7FD8CF"
-            strokeWidth="0.8"
-          />
+          <defs>
+            <linearGradient id="skylineGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#7FD8CF" stopOpacity="0" />
+              <stop offset="100%" stopColor="#7FD8CF" stopOpacity="1" />
+            </linearGradient>
+          </defs>
+          <g fill="url(#skylineGrad)" stroke="none">
+            {/* Left cluster - small buildings */}
+            <rect x="0" y="150" width="60" height="50" />
+            <rect x="60" y="130" width="40" height="70" />
+            <rect x="100" y="145" width="55" height="55" />
+            <rect x="155" y="115" width="45" height="85" />
+            <rect x="200" y="140" width="60" height="60" />
+            <rect x="260" y="100" width="35" height="100" />
+
+            {/* Liberation Tower (tall thin with spike) */}
+            <rect x="310" y="60" width="20" height="140" />
+            <polygon points="320,60 315,45 325,45" />
+
+            {/* Mid cluster */}
+            <rect x="345" y="125" width="70" height="75" />
+            <rect x="415" y="105" width="50" height="95" />
+            <rect x="465" y="140" width="60" height="60" />
+
+            {/* Al Hamra Tower (curved suggestion - tall rectangle w/ notch) */}
+            <path d="M 540 40 L 555 40 L 570 60 L 570 200 L 540 200 Z" />
+
+            {/* City buildings between */}
+            <rect x="585" y="120" width="55" height="80" />
+            <rect x="640" y="135" width="45" height="65" />
+            <rect x="685" y="105" width="60" height="95" />
+            <rect x="745" y="130" width="40" height="70" />
+
+            {/* Kuwait Towers (iconic 3-sphere landmark) — right of center */}
+            {/* Tall tower - 2 spheres + top */}
+            <rect x="820" y="60" width="6" height="140" />
+            <circle cx="823" cy="80" r="16" />
+            <circle cx="823" cy="115" r="12" />
+            <polygon points="820,60 826,60 823,45" />
+            {/* Medium tower - 1 sphere */}
+            <rect x="855" y="90" width="5" height="110" />
+            <circle cx="857.5" cy="105" r="10" />
+            {/* Short spire */}
+            <rect x="880" y="120" width="4" height="80" />
+            <polygon points="880,120 884,120 882,110" />
+
+            {/* Right cluster - buildings */}
+            <rect x="905" y="140" width="55" height="60" />
+            <rect x="960" y="115" width="45" height="85" />
+            <rect x="1005" y="130" width="60" height="70" />
+            <rect x="1065" y="100" width="40" height="100" />
+            <rect x="1105" y="145" width="50" height="55" />
+            <rect x="1155" y="125" width="45" height="75" />
+          </g>
         </svg>
 
-        <div className="container relative z-[2] grid items-center gap-[clamp(32px,5vw,64px)] py-[clamp(64px,9vw,110px)] lg:grid-cols-[1.1fr_1fr]">
+        <div className="container relative z-[2] grid items-center gap-[clamp(32px,5vw,56px)] py-[clamp(56px,8vw,96px)] pb-[clamp(80px,12vw,180px)] lg:grid-cols-[1.15fr_1fr]">
           {/* LEFT — copy */}
           <div>
             <div className="mb-[26px] flex items-center gap-4">
@@ -161,9 +207,9 @@ export default async function HomePage({
             </div>
           </div>
 
-          {/* RIGHT — hero photo frame */}
-          <div className="relative lg:justify-self-end w-full max-w-[560px]">
-            <div className="relative aspect-[4/3] border-2 border-brand-200/40 overflow-hidden group">
+          {/* RIGHT — hero photo frame (3:2 = สมส่วนกว่ารูปกลุ่ม) */}
+          <div className="relative lg:justify-self-end w-full max-w-[520px] mx-auto lg:mx-0">
+            <div className="relative aspect-[3/2] border-2 border-brand-200/40 overflow-hidden group">
               {/* Decorative border corners */}
               <span className="absolute top-0 start-0 h-6 w-6 border-t-[3px] border-s-[3px] border-brand z-10" />
               <span className="absolute top-0 end-0 h-6 w-6 border-t-[3px] border-e-[3px] border-brand z-10" />
@@ -207,8 +253,8 @@ export default async function HomePage({
           </div>
         </div>
 
-        {/* Scroll hint */}
-        <div className="absolute bottom-4 start-1/2 -translate-x-1/2 z-[3] pointer-events-none flex flex-col items-center gap-1 text-[11px] tracking-wider uppercase text-brand-200/60">
+        {/* Scroll hint — วางเหนือ skyline */}
+        <div className="absolute bottom-[calc(min(30vh,240px)+8px)] start-1/2 -translate-x-1/2 z-[3] pointer-events-none flex flex-col items-center gap-1 text-[11px] tracking-wider uppercase text-brand-200/60">
           <span>{d.scrollHint ?? "Scroll"}</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="animate-bounce-slow">
             <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
