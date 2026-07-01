@@ -55,6 +55,13 @@ html[dir="rtl"] .row-auto-flip { flex-direction: row-reverse; }
   animation-fill-mode: both;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
+@keyframes bounceSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+.animate-bounce-slow {
+  animation: bounceSlow 2s ease-in-out infinite;
+}
 .fade-in { animation-name: fadeIn; }
 .slide-in-from-top { animation-name: slideInFromTop; }
 .modal-pop { animation-name: modalPop; }

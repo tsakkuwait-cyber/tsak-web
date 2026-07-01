@@ -32,8 +32,14 @@
     "ctaBandTitle": "Support Thai Students in Kuwait",
     "ctaBandText": "Your support helps the association host events and offer scholarships to its members. There is no obligation to donate — if you would like to support us, simply contact the association directly.",
     "ctaBandBtn": "Contact to Support",
+    "ctaReason1": "Events and activities for members",
+    "ctaReason2": "Scholarships for our students",
+    "ctaReason3": "Preserving Thai culture abroad",
     "statsTitle": "Our Impact",
-    "activitiesTitle": "Recent Activities"
+    "activitiesTitle": "Recent Activities",
+    "scrollHint": "Scroll down for more",
+    "highlightsPreview": "Latest stories from members",
+    "viewAll": "View all"
   },
   "footer": {
     "about": "Thai Student Association in the State of Kuwait — a home and support for Thai students abroad.",

@@ -5,27 +5,36 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import {
   getStats,
   getActivities,
-  getInstitutions,
+  getHighlights,
   getContent,
+  type HighlightType,
 } from "@/lib/google-sheets";
 import { DonateButton } from "@/components/DonateButton";
 import { ActivityGallery } from "@/components/ActivityGallery";
 
 /**
- * Home — เลย์เอาต์แบบ "editorial / magazine" ตาม petrol design
- *   HERO          พื้น petrol เข้ม + EST. 2011 + kicker + huge title + lead + 2 CTAs
- *   STATS STRIP   แถบลอยทับ hero (margin-top ลบ) — grid 4 cells, มี border คั่น
- *   SECTION 01    About — sidebar (01 + kicker + bar) | content (title + paragraph)
- *   SECTION 02    Mission/Pillars — numbered rows (ไม่ใช่ cards)
- *   SECTION 03    Where studying — institution cards (top-border accent, badge dark)
- *   CTA BAND      petrol bg + accent bar + title + button (right)
+ * Home — engaging editorial layout
+ *   HERO         hero photo (real photo of members) + kicker/title/lead + scroll hint
+ *   STATS STRIP  floating
+ *   SECTION 01   About — visual sidebar + content
+ *   SECTION 02   Mission/Pillars — numbered rows with icons
+ *   SECTION 03   Recent Highlights (แทน institutions preview)
+ *   CTA BAND     with reasons "why support"
+ *   ACTIVITIES   optional preview
  */
 
-// ISR — refresh ข้อมูลจาก Google Sheet ทุก 60 วินาที (default)
-// ปรับได้ที่ env var NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS
 export const revalidate = Number(
   process.env.NEXT_PUBLIC_SHEETS_REVALIDATE_SECONDS ?? 60
 );
+
+const TYPE_STYLE: Record<HighlightType, { bg: string; text: string }> = {
+  graduation: { bg: "bg-[#E1F4F1]", text: "text-[#0B7068]" },
+  scholarship: { bg: "bg-[#FBF3D6]", text: "text-[#7A5A00]" },
+  award: { bg: "bg-[#FBEEF2]", text: "text-[#B0395A]" },
+  welcome: { bg: "bg-brand-50", text: "text-navy" },
+  story: { bg: "bg-[#EAF0FB]", text: "text-[#1F55C8]" },
+  volunteer: { bg: "bg-[#F4ECE5]", text: "text-[#7A4A1F]" },
+};
 
 export default async function HomePage({
   params,
@@ -35,29 +44,40 @@ export default async function HomePage({
   if (!isLocale(params.locale)) notFound();
   const locale: Locale = params.locale;
 
-  const [dict, stats, activities, institutions, content] = await Promise.all([
+  const [dict, stats, activities, highlights, content] = await Promise.all([
     getDictionary(locale),
     getStats(locale),
     getActivities(locale),
-    getInstitutions(locale),
+    getHighlights(locale),
     getContent(locale),
   ]);
 
-  // helper: override จาก sheet > dict (รุ่นน้องแก้ข้อความใน sheet ได้ — ไม่ต้องแตะโค้ด)
   const t = (key: string, fallback: string) => content[key] ?? fallback;
   const estYear = Number(content["est_year"]) || 2011;
 
-  // เลือก 4 stats ที่จะแสดงใน strip ของ home (เรียงตาม priority)
-  // ถ้า key ไม่มีใน sheet → ข้ามไปอันถัดไป
+  // Stats
   const HOME_STAT_KEYS = ["members", "alumni", "institutions", "events"];
   const statByKey = Object.fromEntries(stats.map((s) => [s.key, s]));
   const homeStats = HOME_STAT_KEYS.map((k) => statByKey[k]).filter(Boolean);
-  // เผื่อ key ใน sheet เปลี่ยน → fill จาก stats ที่เหลือให้ได้ 4 ช่อง
   for (const s of stats) {
     if (homeStats.length >= 4) break;
     if (!HOME_STAT_KEYS.includes(s.key)) homeStats.push(s);
   }
 
+  // Hero photo from content sheet (fallback = null)
+  const heroPhotoUrl = content["hero_photo_url"] ?? "";
+
+  // CTA reasons
+  const d = dict.home as Record<string, string>;
+  const ctaReasons = [d.ctaReason1, d.ctaReason2, d.ctaReason3].filter(Boolean);
+
+  // Recent highlights (top 3)
+  const recentHighlights = highlights.slice(0, 3);
+
+  const typeLabel = (t: HighlightType) => {
+    const s = dict.students as Record<string, string>;
+    return s[`type${t.charAt(0).toUpperCase()}${t.slice(1)}`] ?? t;
+  };
 
   return (
     <>
@@ -65,65 +85,138 @@ export default async function HomePage({
             HERO
          ════════════════════════════════════════════════════ */}
       <section className="relative overflow-hidden bg-navy text-white">
-        {/* gradient overlays */}
-        <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-r from-navy via-navy/70 to-navy/40" />
-        <div className="absolute inset-0 z-[1] pointer-events-none bg-hero-glow" />
-        {/* Kuwait map outline decorative SVG (bottom-right) */}
+        {/* Layered backgrounds */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.06]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(127,216,207,1) 1px, transparent 1px), linear-gradient(90deg, rgba(127,216,207,1) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+        />
+        <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
+        {/* Soft gradient orbs */}
+        <div
+          className="absolute -top-40 -end-40 w-[540px] h-[540px] rounded-full pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(16,150,141,0.28), transparent)",
+          }}
+        />
+        <div
+          className="absolute -bottom-60 -start-60 w-[600px] h-[600px] rounded-full pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(127,216,207,0.16), transparent)",
+          }}
+        />
+        {/* Kuwait outline decorative */}
         <svg
           viewBox="0 0 100 100"
-          preserveAspectRatio="xMidYMid meet"
-          className="absolute -end-9 -bottom-12 z-[1] pointer-events-none"
+          className="absolute -end-8 -bottom-14 pointer-events-none"
           style={{
-            width: "min(48vw, 560px)",
-            height: "min(48vw, 560px)",
-            opacity: 0.16,
+            width: "min(44vw, 500px)",
+            height: "min(44vw, 500px)",
+            opacity: 0.09,
           }}
         >
           <path
-            d="M20 8 L40 6 L58 5 L62 12 L64 20 L52 27 L46 32 L57 35 L59 40 L59 50 L57 62 L54 72 L52 79 L40 75 L24 70 L8 58 L5 44 L11 24 Z"
+            d="M 13 14 L 28 12 L 46 11 L 60 11 L 67 13 L 70 17 L 71 22 L 72 28 L 74 34 L 70 38 L 62 40 L 54 42 L 48 46 L 52 51 L 60 52 L 68 53 L 74 58 L 77 65 L 77 73 L 75 80 L 70 85 L 60 87 L 42 87 L 24 85 L 14 82 L 9 75 L 7 62 L 7 48 L 8 32 L 10 22 Z"
             fill="none"
             stroke="#7FD8CF"
-            strokeWidth="0.9"
-            strokeLinejoin="round"
+            strokeWidth="0.8"
           />
         </svg>
 
-        <div className="container relative z-[2] py-[clamp(56px,8vw,96px)] pb-[clamp(78px,10vw,120px)]">
-          {/* EST. + kicker row */}
-          <div className="mb-[26px] flex items-center gap-4">
-            <span className="font-display text-[13px] font-bold tracking-[0.08em] text-brand-200">
-              EST. {estYear}
-            </span>
-            <span className="h-px w-[30px] bg-brand-200 opacity-60" />
-            <span className="text-[13px] font-semibold tracking-[0.14em] uppercase text-brand-200">
-              {t("hero_kicker", dict.home.kicker)}
-            </span>
+        <div className="container relative z-[2] grid items-center gap-[clamp(32px,5vw,64px)] py-[clamp(64px,9vw,110px)] lg:grid-cols-[1.1fr_1fr]">
+          {/* LEFT — copy */}
+          <div>
+            <div className="mb-[26px] flex items-center gap-4">
+              <span className="font-display text-[13px] font-bold tracking-[0.08em] text-brand-200">
+                EST. {estYear}
+              </span>
+              <span className="h-px w-[30px] bg-brand-200 opacity-60" />
+              <span className="text-[13px] font-semibold tracking-[0.14em] uppercase text-brand-200">
+                {t("hero_kicker", dict.home.kicker)}
+              </span>
+            </div>
+
+            <h1 className="m-0 max-w-[16ch] text-[clamp(34px,5.6vw,62px)] font-extrabold leading-[1.1]">
+              {t("hero_title", dict.home.title)}
+            </h1>
+            <p className="mt-[26px] max-w-[50ch] text-[clamp(16px,1.6vw,19px)] leading-[1.8] text-[#BBDCD9]">
+              {t("hero_lead", dict.home.lead)}
+            </p>
+
+            <div className="mt-[34px] flex flex-wrap gap-3.5">
+              <DonateButton
+                href={`/${locale}/contact`}
+                label={dict.cta.support}
+              />
+              <DonateButton
+                href={`/${locale}/activities`}
+                label={dict.cta.activities}
+                variant="outline"
+              />
+            </div>
           </div>
 
-          <h1 className="m-0 max-w-[16ch] text-[clamp(34px,5.6vw,62px)] font-extrabold leading-[1.1]">
-            {t("hero_title", dict.home.title)}
-          </h1>
-          <p className="mt-[26px] max-w-[50ch] text-[clamp(16px,1.6vw,19px)] leading-[1.8] text-[#BBDCD9]">
-            {t("hero_lead", dict.home.lead)}
-          </p>
+          {/* RIGHT — hero photo frame */}
+          <div className="relative lg:justify-self-end w-full max-w-[560px]">
+            <div className="relative aspect-[4/3] border-2 border-brand-200/40 overflow-hidden group">
+              {/* Decorative border corners */}
+              <span className="absolute top-0 start-0 h-6 w-6 border-t-[3px] border-s-[3px] border-brand z-10" />
+              <span className="absolute top-0 end-0 h-6 w-6 border-t-[3px] border-e-[3px] border-brand z-10" />
+              <span className="absolute bottom-0 start-0 h-6 w-6 border-b-[3px] border-s-[3px] border-brand z-10" />
+              <span className="absolute bottom-0 end-0 h-6 w-6 border-b-[3px] border-e-[3px] border-brand z-10" />
 
-          <div className="mt-[34px] flex flex-wrap gap-3.5">
-            <DonateButton
-              href={`/${locale}/contact`}
-              label={dict.cta.support}
-            />
-            <DonateButton
-              href={`/${locale}/activities`}
-              label={dict.cta.activities}
-              variant="outline"
-            />
+              {heroPhotoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={heroPhotoUrl}
+                  alt="TSAK members"
+                  referrerPolicy="no-referrer"
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
+                />
+              ) : (
+                <div
+                  className="absolute inset-0 grid place-items-center"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 16px,rgba(255,255,255,.01) 16px 32px)",
+                  }}
+                >
+                  <div className="text-center px-6">
+                    <div className="font-display text-[48px] mb-2">👥</div>
+                    <div className="font-mono text-[12px] text-brand-200/85">
+                      [ ใส่รูปกลุ่มสมาชิกใน sheet content: hero_photo_url ]
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* small info card floating */}
+            <div className="hidden sm:block absolute -bottom-5 start-5 bg-white text-navy px-4 py-3 shadow-lg">
+              <div className="text-[10.5px] font-bold tracking-wider uppercase text-brand-600">
+                {dict.home.heroBadge}
+              </div>
+              <div className="font-display text-[22px] font-extrabold text-brand leading-none mt-1">
+                {statByKey["members"]?.display ?? "58"}+
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Scroll hint */}
+        <div className="absolute bottom-4 start-1/2 -translate-x-1/2 z-[3] pointer-events-none flex flex-col items-center gap-1 text-[11px] tracking-wider uppercase text-brand-200/60">
+          <span>{d.scrollHint ?? "Scroll"}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="animate-bounce-slow">
+            <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
+          </svg>
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════
-            STATS STRIP (ลอยทับ hero edge)
-         ════════════════════════════════════════════════════ */}
+      {/* ════════════════ STATS STRIP ════════════════ */}
       <div className="container relative z-[5] -mt-[clamp(44px,6vw,58px)] px-[clamp(20px,5vw,48px)]">
         <div
           className="grid border border-line bg-white shadow-[0_18px_44px_rgba(0,0,0,.10)]"
@@ -155,22 +248,22 @@ export default async function HomePage({
         </div>
       </div>
 
-      {/* ════════════════════════════════════════════════════
-            SECTION 01 — ABOUT (sidebar + content)
-         ════════════════════════════════════════════════════ */}
+      {/* ════════════════ SECTION 01 — ABOUT ════════════════ */}
       <section className="container py-[clamp(58px,8vw,96px)]">
         <div className="flex flex-wrap gap-x-[clamp(28px,5vw,72px)] gap-y-8">
-          {/* sidebar */}
           <div className="flex-none w-[200px] min-w-[160px]">
-            <div className="font-display text-[15px] font-extrabold text-brand">
-              01
-            </div>
+            <div className="font-display text-[15px] font-extrabold text-brand">01</div>
             <div className="mt-2 text-[13px] font-bold tracking-[0.12em] uppercase text-brand-600">
               {dict.home.aboutKicker}
             </div>
             <div className="mt-[14px] h-[2px] w-10 bg-brand" />
+            {/* Decorative quote mark */}
+            <div className="mt-8 hidden sm:block">
+              <svg width="60" height="60" viewBox="0 0 60 60" fill="none" className="text-brand-50">
+                <path d="M15 40 Q 10 40 10 32 Q 10 20 22 15 L 24 20 Q 16 24 16 30 L 22 30 Q 25 30 25 34 Q 25 40 20 40 Z M40 40 Q 35 40 35 32 Q 35 20 47 15 L 49 20 Q 41 24 41 30 L 47 30 Q 50 30 50 34 Q 50 40 45 40 Z" fill="currentColor" />
+              </svg>
+            </div>
           </div>
-          {/* content */}
           <div className="flex-1 basis-[420px] min-w-[300px]">
             <h2 className="m-0 max-w-[20ch] text-[clamp(25px,3.2vw,36px)] font-extrabold leading-[1.28] text-navy">
               {t("about_title", dict.home.aboutTitle)}
@@ -182,15 +275,11 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════
-            SECTION 02 — MISSION / PILLARS (numbered rows)
-         ════════════════════════════════════════════════════ */}
+      {/* ════════════════ SECTION 02 — PILLARS ════════════════ */}
       <section className="bg-white border-y border-line">
         <div className="container py-[clamp(48px,7vw,84px)]">
           <div className="mb-2 flex items-center gap-4">
-            <span className="font-display text-[15px] font-extrabold text-brand">
-              02
-            </span>
+            <span className="font-display text-[15px] font-extrabold text-brand">02</span>
             <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
               {dict.home.pillarsTitle}
             </span>
@@ -200,7 +289,7 @@ export default async function HomePage({
           {pillars(locale).map((p, idx) => (
             <div
               key={p.title}
-              className="flex flex-wrap items-start gap-x-[clamp(18px,4vw,56px)] gap-y-3 border-b border-line py-[clamp(24px,3vw,34px)]"
+              className="flex flex-wrap items-start gap-x-[clamp(18px,4vw,56px)] gap-y-3 border-b border-line py-[clamp(24px,3vw,34px)] transition-colors hover:bg-brand-50/40"
             >
               <div
                 className="font-display flex-none w-[72px] text-[clamp(32px,4vw,46px)] font-extrabold leading-none text-brand-50"
@@ -219,98 +308,131 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════
-            SECTION 03 — WHERE (Institutions preview)
-         ════════════════════════════════════════════════════ */}
-      <section className="container py-[clamp(48px,7vw,84px)]">
-        <div className="mb-[30px] flex items-center gap-4">
-          <span className="font-display text-[15px] font-extrabold text-brand">
-            03
-          </span>
-          <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
-            {dict.students.listTitle}
-          </span>
-          <span className="flex-1 h-px bg-line" />
-          <Link
-            href={`/${locale}/students`}
-            className="text-[13.5px] font-bold text-brand hover:text-brand-600 whitespace-nowrap"
-          >
-            {dict.common.readMore} →
-          </Link>
-        </div>
+      {/* ════════════════ SECTION 03 — RECENT HIGHLIGHTS ════════════════ */}
+      {recentHighlights.length > 0 && (
+        <section className="container py-[clamp(48px,7vw,84px)]">
+          <div className="mb-8 flex items-center gap-4">
+            <span className="font-display text-[15px] font-extrabold text-brand">03</span>
+            <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
+              {d.highlightsPreview ?? "Recent Stories"}
+            </span>
+            <span className="flex-1 h-px bg-line" />
+            <Link
+              href={`/${locale}/students`}
+              className="text-[13.5px] font-bold text-brand hover:text-brand-600 whitespace-nowrap"
+            >
+              {d.viewAll ?? "View all"} →
+            </Link>
+          </div>
 
-        {institutions.length === 0 ? (
-          <div className="rounded-sm border border-dashed border-line bg-white p-10 text-center text-ink-muted">
-            {dict.students.comingSoon}
-          </div>
-        ) : (
-          <div
-            className="grid gap-4"
-            style={{
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            }}
-          >
-            {institutions.slice(0, 4).map((inst) => (
-              <Link
-                key={inst.id}
-                href={`/${locale}/students`}
-                className="flex flex-col gap-3.5 border border-line border-t-[3px] border-t-brand bg-white p-[22px] hover:shadow-card transition-shadow"
-              >
-                <div className="flex items-center justify-between gap-2.5">
-                  <span className="inline-flex items-center justify-center min-w-[40px] h-7 px-2 bg-navy text-white text-[11px] font-extrabold">
-                    {inst.short}
-                  </span>
-                  <span className="font-display text-[30px] font-extrabold leading-none text-brand">
-                    {inst.studentsCount}
-                  </span>
-                </div>
-                <div>
-                  <div className="text-[15px] font-bold leading-[1.35] text-navy">
-                    {inst.name}
+          <div className="grid gap-3 md:grid-cols-3">
+            {recentHighlights.map((h) => {
+              const style = TYPE_STYLE[h.type];
+              return (
+                <Link
+                  key={h.id}
+                  href={`/${locale}/students`}
+                  className="group flex flex-col overflow-hidden border border-line bg-white transition-all duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-brand hover:shadow-soft hover:-translate-y-0.5"
+                >
+                  <div
+                    className="relative bg-gradient-to-br from-brand-50 to-brand-100"
+                    style={{ aspectRatio: "4 / 3" }}
+                  >
+                    {h.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={h.photoUrl}
+                        alt={h.name}
+                        referrerPolicy="no-referrer"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
+                        style={{ objectPosition: "center 20%" }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 grid place-items-center">
+                        <span className="font-display text-[48px] font-extrabold text-brand-600/25">
+                          {h.name.slice(0, 1)}
+                        </span>
+                      </div>
+                    )}
+                    <span
+                      className={`absolute top-3 start-3 inline-block px-2.5 py-1 text-[11px] font-bold ${style.bg} ${style.text}`}
+                    >
+                      {typeLabel(h.type)}
+                    </span>
                   </div>
-                  <div className="mt-1 text-[12.5px] text-ink-muted">
-                    {inst.type}{inst.area && " · "}{inst.area}
+                  <div className="flex-1 p-4">
+                    <h3 className="text-[15px] font-extrabold leading-snug text-navy line-clamp-2">
+                      {h.headline}
+                    </h3>
+                    <div className="mt-1 text-[12px] font-semibold text-brand-600 truncate">
+                      {h.name}
+                      {h.institution && (
+                        <span className="text-ink-muted font-medium"> · {h.institution}</span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ════════════════ CTA BAND — with reasons ════════════════ */}
+      <section className="relative bg-navy text-white overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.06]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(127,216,207,1) 1px, transparent 1px), linear-gradient(90deg, rgba(127,216,207,1) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+        />
+        <div className="container relative py-[clamp(52px,8vw,88px)]">
+          <div className="mb-5 h-[2px] w-10 bg-brand" />
+          <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
+            <div className="flex-1 basis-[420px] min-w-[300px]">
+              <h2 className="m-0 max-w-[22ch] text-[clamp(24px,3vw,36px)] font-extrabold leading-[1.25]">
+                {t("cta_band_title", dict.home.ctaBandTitle)}
+              </h2>
+              <p className="mt-4 max-w-[60ch] text-[16px] leading-[1.8] text-[#BBDCD9]">
+                {t("cta_band_text", dict.home.ctaBandText)}
+              </p>
+            </div>
+            <Link
+              href={`/${locale}/contact`}
+              className="flex-none inline-flex items-center justify-center rounded-sm bg-brand px-[34px] py-4 text-[15px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.22)] hover:bg-brand-600 transition-colors whitespace-nowrap"
+            >
+              {dict.home.ctaBandBtn}
+            </Link>
+          </div>
+
+          {/* Reasons — 3 columns */}
+          {ctaReasons.length > 0 && (
+            <div className="grid gap-4 sm:grid-cols-3 border-t border-white/10 pt-8">
+              {ctaReasons.map((r, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <span className="font-display text-[22px] font-extrabold text-brand-200 leading-none">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex-1">
+                    <div className="text-[15px] font-semibold text-white leading-snug">
+                      {r}
+                    </div>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════
-            CTA BAND
-         ════════════════════════════════════════════════════ */}
-      <section className="bg-navy text-white">
-        <div className="container flex flex-wrap items-center justify-between gap-[30px] py-[clamp(44px,6vw,72px)]">
-          <div className="flex-1 basis-[420px] min-w-[300px]">
-            <div className="mb-5 h-[2px] w-10 bg-brand" />
-            <h2 className="m-0 max-w-[22ch] text-[clamp(23px,3vw,33px)] font-extrabold leading-[1.3]">
-              {t("cta_band_title", dict.home.ctaBandTitle)}
-            </h2>
-            <p className="mt-4 max-w-[60ch] text-[16px] leading-[1.8] text-[#BBDCD9]">
-              {t("cta_band_text", dict.home.ctaBandText)}
-            </p>
-          </div>
-          <Link
-            href={`/${locale}/contact`}
-            className="flex-none inline-flex items-center justify-center rounded-sm bg-brand px-[34px] py-4 text-[15px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.22)] hover:bg-brand-600 transition-colors whitespace-nowrap"
-          >
-            {dict.home.ctaBandBtn}
-          </Link>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════
-            ACTIVITIES (ถ้ามี) — แสดงล่างสุดเป็น bonus
-         ════════════════════════════════════════════════════ */}
+      {/* ════════════════ ACTIVITIES PREVIEW ════════════════ */}
       {activities.length > 0 && (
         <section className="bg-white border-t border-line">
           <div className="container py-[clamp(48px,7vw,84px)]">
             <div className="mb-8 flex items-center gap-4">
-              <span className="font-display text-[15px] font-extrabold text-brand">
-                04
-              </span>
+              <span className="font-display text-[15px] font-extrabold text-brand">04</span>
               <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
                 {dict.home.activitiesTitle}
               </span>
@@ -319,7 +441,7 @@ export default async function HomePage({
                 href={`/${locale}/activities`}
                 className="text-[13.5px] font-bold text-brand hover:text-brand-600 whitespace-nowrap"
               >
-                {dict.common.readMore} →
+                {d.viewAll ?? "View all"} →
               </Link>
             </div>
             <div
@@ -355,9 +477,7 @@ export default async function HomePage({
   );
 }
 
-/* ----------------------------------------------------------------
- *  Pillars data (hardcoded — แก้เนื้อหาในนี้ตรงๆ)
- * ---------------------------------------------------------------- */
+/* ------ Pillars (hardcoded) ------ */
 function pillars(locale: Locale): { title: string; desc: string }[] {
   const data = {
     th: [
