@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getActivities, type ActivityItem } from "@/lib/google-sheets";
-import { ActivityGallery } from "@/components/ActivityGallery";
+import { ActivityCard } from "@/components/ActivityCard";
 
 /**
  * Activities — image-focused grid (เน้นรูป) + audience tag chip
@@ -114,62 +114,17 @@ export default async function ActivitiesPage({
                     gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
                   }}
                 >
-                  {byYear[year].map((act) => {
-                    const aud = AUDIENCE[act.audience];
-                    return (
-                      <article
-                        key={act.id}
-                        className="flex flex-row sm:flex-col border border-line bg-white transition-shadow hover:shadow-card overflow-hidden"
-                      >
-                        {/* IMAGE — mobile: square 110px | desktop: 16:10 full-width */}
-                        <div className="relative flex-none w-[110px] aspect-square sm:w-full sm:aspect-[16/10]">
-                          {act.images.length > 0 ? (
-                            <ActivityGallery
-                              images={act.images}
-                              alt={act.title}
-                              emptyEmoji="📷"
-                            />
-                          ) : (
-                            <div
-                              className="grid h-full w-full place-items-center text-[11px] text-ink-subtle"
-                              style={{
-                                backgroundImage:
-                                  "repeating-linear-gradient(135deg,#E4ECF4 0 12px,#F1F6FB 12px 24px)",
-                              }}
-                            >
-                              [ photo ]
-                            </div>
-                          )}
-                          {/* audience tag */}
-                          <span
-                            className={`absolute top-2 start-2 sm:top-3 sm:start-3 z-[2] inline-block px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-[11.5px] font-bold ${aud.bg} ${aud.text}`}
-                          >
-                            {audienceLabel(act.audience)}
-                          </span>
-                        </div>
-
-                        {/* TEXT */}
-                        <div className="flex flex-1 flex-col p-3 sm:p-[18px] min-w-0">
-                          <time className="font-display text-[11.5px] sm:text-[12.5px] font-bold text-brand-600">
-                            {act.date}
-                          </time>
-                          <h3 className="mt-1 sm:mt-2 text-[14.5px] sm:text-[17px] font-bold leading-snug text-navy line-clamp-2">
-                            {act.title}
-                          </h3>
-                          {act.description && (
-                            <p className="mt-1 text-[12.5px] sm:text-[13.5px] leading-snug text-ink-muted line-clamp-2">
-                              {act.description}
-                            </p>
-                          )}
-                          {act.location && (
-                            <p className="mt-1.5 sm:mt-2 text-[11.5px] sm:text-[12px] text-ink-subtle">
-                              📍 {act.location}
-                            </p>
-                          )}
-                        </div>
-                      </article>
-                    );
-                  })}
+                  {byYear[year].map((act) => (
+                    <ActivityCard
+                      key={act.id}
+                      act={act}
+                      labels={{
+                        audienceLabel: audienceLabel(act.audience),
+                        viewPhotos: dict.activities.viewPhotos,
+                        closeLabel: "Close",
+                      }}
+                    />
+                  ))}
                 </div>
               </div>
             ))}
