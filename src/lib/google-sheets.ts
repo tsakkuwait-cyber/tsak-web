@@ -264,6 +264,10 @@ export interface HighlightItem {
   photoUrl: string;
   headline: string;
   story: string;
+  /** ชื่อกลุ่ม (ว่าง = standalone) — items ที่ collection เดียวกันจะรวมเป็นกลุ่ม */
+  collection: string;
+  /** TRUE = ใช้เป็น cover ของกลุ่มนี้ (แสดงใน gallery); ถ้าไม่มีตัวไหน TRUE จะใช้ตัวแรก */
+  isCover: boolean;
 }
 
 export interface ChannelItem {
@@ -372,12 +376,25 @@ export async function getHighlights(locale: Locale): Promise<HighlightItem[]> {
         id: r.id,
         year: r.year ?? "",
         type,
-        name: r.name ?? "",
-        institution: r.institution ?? "",
-        major: r.major ?? "",
+        // รองรับทั้งแบบ multi-lang (name_th/en/ar) และแบบเก่า (name เดียว)
+        name: r[`name_${locale}`] ?? r.name_th ?? r.name_en ?? r.name ?? "",
+        institution:
+          r[`institution_${locale}`] ??
+          r.institution_th ??
+          r.institution_en ??
+          r.institution ??
+          "",
+        major:
+          r[`major_${locale}`] ??
+          r.major_th ??
+          r.major_en ??
+          r.major ??
+          "",
         photoUrl: normalizeImageUrl(r.photo_url ?? ""),
         headline: r[`headline_${locale}`] ?? r.headline_th ?? r.headline_en ?? "",
         story: r[`story_${locale}`] ?? r.story_th ?? r.story_en ?? "",
+        collection: r.collection ?? "",
+        isCover: (r.is_cover ?? "").toUpperCase() === "TRUE",
       };
     })
     .sort((a, b) => (a.year < b.year ? 1 : -1));

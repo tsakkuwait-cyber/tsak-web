@@ -151,13 +151,23 @@ const activitiesData = [
  *    • story = เนื้อหายาว (optional, แสดงใน lightbox)
  *    • ระบบจะเรียงตาม year ล่าสุดขึ้นก่อน
  */
+/** Highlights schema (columns letters for reference):
+ *   A id | B year | C type
+ *   D name_th | E name_en | F name_ar     (สูตรแปลอัตโนมัติ E,F จาก D)
+ *   G institution_th | H institution_en | I institution_ar  (สูตรแปลจาก G)
+ *   J major_th | K major_en | L major_ar   (สูตรแปลจาก J)
+ *   M headline_th | N headline_en | O headline_ar   (สูตรแปลจาก M)
+ *   P story_th | Q story_en | R story_ar   (สูตรแปลจาก P)
+ *   S photo_url | T collection | U is_cover | V published
+ */
 const highlightsData = [
-  ["id", "year", "type", "name", "institution", "major", "headline_th", "headline_en", "headline_ar", "story_th", "story_en", "story_ar", "photo_url", "published"],
-  ["1", "2025", "graduation", "นักศิกรอบ มะลิ", "Abdulrahman Al-Sumait", "ชะรีอะฮ์และหลักนิติศาสตร์", "จบการศึกษา ปีการศึกษา 2025", tr("G", 2, "en"), tr("G", 2, "ar"), "", "", "", "", "TRUE"],
-  ["2", "2025", "graduation", "นายอันศอร มุสตอฟาดี", "Abdulrahman Al-Sumait", "ชะรีอะฮ์และหลักนิติศาสตร์", "จบการศึกษา ปีการศึกษา 2025", tr("G", 3, "en"), tr("G", 3, "ar"), "", "", "", "", "TRUE"],
-  ["3", "2025", "graduation", "นายไอฟาน วาสิดารี", "Abdulrahman Al-Sumait", "อักษรศาสตร์ (อาหรับ)", "จบการศึกษา ปีการศึกษา 2025", tr("G", 4, "en"), tr("G", 4, "ar"), "", "", "", "", "TRUE"],
-  ["4", "2025", "graduation", "นายอิสมาแอล มูกัลดาสี", "Abdulrahman Al-Sumait", "อักษรศาสตร์และวรรณกรรมอาหรับ", "จบการศึกษา ปีการศึกษา 2025", tr("G", 5, "en"), tr("G", 5, "ar"), "", "", "", "", "TRUE"],
-  ["5", "2025", "graduation", "นายมาส มูฮัมมัดวี", "Abdulrahman Al-Sumait", "ศึกษาศาสตร์ (อังกฤษ)", "จบการศึกษา ปีการศึกษา 2025", tr("G", 6, "en"), tr("G", 6, "ar"), "", "", "", "", "TRUE"],
+  ["id", "year", "type", "name_th", "name_en", "name_ar", "institution_th", "institution_en", "institution_ar", "major_th", "major_en", "major_ar", "headline_th", "headline_en", "headline_ar", "story_th", "story_en", "story_ar", "photo_url", "collection", "is_cover", "published"],
+  // Cover of class-2025-sumait collection
+  ["1", "2025", "graduation", "", tr("D", 2, "en"), tr("D", 2, "ar"), "สถาบันอับดุลเราะห์มาน อัล-สุไมต์", tr("G", 2, "en"), tr("G", 2, "ar"), "", tr("J", 2, "en"), tr("J", 2, "ar"), "รุ่นจบการศึกษา 2025 · Al-Sumait", tr("M", 2, "en"), tr("M", 2, "ar"), "ผู้จบการศึกษาจากสถาบัน Abdulrahman Al-Sumait ปีการศึกษา 2025", tr("P", 2, "en"), tr("P", 2, "ar"), "", "class-2025-sumait", "TRUE", "TRUE"],
+  ["2", "2025", "graduation", "นายอักรอม มะเซ็ง", tr("D", 3, "en"), tr("D", 3, "ar"), "สถาบันอับดุลเราะห์มาน อัล-สุไมต์", tr("G", 3, "en"), tr("G", 3, "ar"), "ชะรีอะฮ์และหลักนิติศาสตร์", tr("J", 3, "en"), tr("J", 3, "ar"), "จบการศึกษา ปีการศึกษา 2025", tr("M", 3, "en"), tr("M", 3, "ar"), "", "", "", "", "class-2025-sumait", "FALSE", "TRUE"],
+  ["3", "2025", "graduation", "นายอัลอะรอฟ มะเยาะ", tr("D", 4, "en"), tr("D", 4, "ar"), "สถาบันอับดุลเราะห์มาน อัล-สุไมต์", tr("G", 4, "en"), tr("G", 4, "ar"), "ชะรีอะฮ์และหลักนิติศาสตร์", tr("J", 4, "en"), tr("J", 4, "ar"), "จบการศึกษา ปีการศึกษา 2025", tr("M", 4, "en"), tr("M", 4, "ar"), "", "", "", "", "class-2025-sumait", "FALSE", "TRUE"],
+  ["4", "2025", "graduation", "นายอัฟฟาน พาลีเขตต์", tr("D", 5, "en"), tr("D", 5, "ar"), "สถาบันอับดุลเราะห์มาน อัล-สุไมต์", tr("G", 5, "en"), tr("G", 5, "ar"), "ศึกษาศาสตร์ (อาหรับ)", tr("J", 5, "en"), tr("J", 5, "ar"), "จบการศึกษา ปีการศึกษา 2025", tr("M", 5, "en"), tr("M", 5, "ar"), "", "", "", "", "class-2025-sumait", "FALSE", "TRUE"],
+  ["5", "2025", "graduation", "นายอันศอร มุสโตฟาดี", tr("D", 6, "en"), tr("D", 6, "ar"), "สถาบันอับดุลเราะห์มาน อัล-สุไมต์", tr("G", 6, "en"), tr("G", 6, "ar"), "อักษรศาสตร์ (อาหรับและวรรณกรรม)", tr("J", 6, "en"), tr("J", 6, "ar"), "จบการศึกษา ปีการศึกษา 2025", tr("M", 6, "en"), tr("M", 6, "ar"), "", "", "", "", "class-2025-sumait", "FALSE", "TRUE"],
 ];
 
 const TABS = {
