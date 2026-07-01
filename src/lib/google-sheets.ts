@@ -396,7 +396,10 @@ export async function getContent(locale: Locale): Promise<Record<string, string>
   const out: Record<string, string> = {};
   for (const r of rows) {
     const v = r[`value_${locale}`] ?? r.value_th ?? r.value_en;
-    if (r.key && v) out[r.key] = v;
+    if (r.key && v) {
+      // Auto-normalize URL fields (key ลงท้ายด้วย _url) — แปลง Drive URL ให้โหลดได้
+      out[r.key] = r.key.endsWith("_url") ? normalizeImageUrl(v) : v;
+    }
   }
   return out;
 }
