@@ -63,7 +63,7 @@ export function InstitutionCard({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group relative flex flex-col overflow-hidden border border-line bg-white text-start transition-all hover:border-brand hover:shadow-card focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        className="group relative flex flex-col overflow-hidden border border-line bg-white text-start transition-all duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-brand hover:shadow-soft hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
       >
         {/* Cover photo */}
         <div
@@ -76,7 +76,7 @@ export function InstitutionCard({
               src={inst.imageUrl}
               alt={inst.name}
               referrerPolicy="no-referrer"
-              className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
             />
           ) : (
             <div className="absolute inset-0 grid place-items-center text-[#BBDCD9] text-[10px] font-mono opacity-50">
@@ -86,8 +86,8 @@ export function InstitutionCard({
           <span className="absolute top-3 start-3 inline-block bg-navy/85 backdrop-blur-sm px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase text-brand-200">
             {inst.type}
           </span>
-          {/* View detail hint */}
-          <span className="absolute bottom-3 end-3 inline-flex items-center gap-1 bg-white/95 px-2.5 py-1 text-[10.5px] font-bold text-navy shadow opacity-0 transition-opacity group-hover:opacity-100">
+          {/* View detail hint — slide up on hover */}
+          <span className="absolute bottom-3 end-3 inline-flex items-center gap-1 bg-white/95 px-2.5 py-1 text-[10.5px] font-bold text-navy shadow-md opacity-0 translate-y-1 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:translate-y-0">
             {labels.detailLabel} →
           </span>
         </div>
@@ -139,18 +139,18 @@ export function InstitutionCard({
           role="dialog"
           aria-modal="true"
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 sm:p-8 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 sm:p-8 animate-in fade-in duration-300"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[720px] max-h-[90vh] overflow-y-auto bg-white shadow-2xl animate-in slide-in-from-top duration-200"
+            className="relative w-full max-w-[720px] max-h-[90vh] overflow-y-auto bg-white shadow-2xl animate-in modal-pop duration-400"
           >
             {/* Close */}
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close"
-              className="absolute top-3 end-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-navy hover:bg-white shadow-md"
+              className="absolute top-3 end-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-navy shadow-md transition-all duration-200 ease-out hover:bg-white hover:scale-110 hover:rotate-90"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                 <path d="M6 6l12 12M18 6L6 18" />

@@ -74,13 +74,13 @@ export function MobileMenu({
           {/* Backdrop */}
           <div
             onClick={() => setOpen(false)}
-            className="md:hidden fixed inset-0 top-16 z-40 bg-navy/40 backdrop-blur-sm animate-in fade-in duration-200"
+            className="md:hidden fixed inset-0 top-16 z-40 bg-navy/40 backdrop-blur-sm animate-in fade-in duration-300"
             aria-hidden="true"
           />
 
           {/* Drawer slide-down */}
           <div
-            className="md:hidden fixed inset-x-0 top-16 z-50 border-b border-line bg-white shadow-soft animate-in slide-in-from-top duration-200"
+            className="md:hidden fixed inset-x-0 top-16 z-50 border-b border-line bg-white shadow-soft animate-in slide-in-from-top duration-300"
             role="dialog"
             aria-modal="true"
           >

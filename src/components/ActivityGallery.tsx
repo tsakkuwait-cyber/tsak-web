@@ -81,7 +81,7 @@ export function ActivityGallery({
           role="dialog"
           aria-modal="true"
           onClick={() => setOpenIdx(null)}
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/90 p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-300"
         >
           {/* Close (top-right) */}
           <button

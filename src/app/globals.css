@@ -30,16 +30,34 @@ html[dir="rtl"] .row-auto-flip { flex-direction: row-reverse; }
 ::-webkit-scrollbar-thumb { background: #0C3B4540; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #0C3B4580; }
 
-/* ── Animations (สำหรับ MobileMenu) ──────────────────────── */
+/* ── Animations — smooth professional easing ───────────── */
+/* easeOutQuint = cubic-bezier(0.22, 1, 0.36, 1) — นุ่ม, มืออาชีพ */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 @keyframes slideInFromTop {
-  from { transform: translateY(-100%); opacity: 0; }
+  from { transform: translateY(-8px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-.animate-in { animation-fill-mode: both; }
+@keyframes modalPop {
+  from {
+    transform: translateY(12px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
 .fade-in { animation-name: fadeIn; }
 .slide-in-from-top { animation-name: slideInFromTop; }
+.modal-pop { animation-name: modalPop; }
 .duration-200 { animation-duration: 200ms; }
+.duration-300 { animation-duration: 300ms; }
+.duration-400 { animation-duration: 400ms; }
