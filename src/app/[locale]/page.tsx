@@ -289,37 +289,63 @@ export default async function HomePage({
         </div>
       </div>
 
-      {/* ════════════════ SECTION 01 — ABOUT ════════════════ */}
+      {/* ════════════════ SECTION 01 — ABOUT (with photo) ════════════════ */}
       <section className="container py-[clamp(58px,8vw,96px)]">
-        <div className="flex flex-wrap gap-x-[clamp(28px,5vw,72px)] gap-y-8">
-          <div className="flex-none w-[200px] min-w-[160px]">
-            <div className="font-display text-[15px] font-extrabold text-brand">01</div>
-            <div className="mt-2 text-[13px] font-bold tracking-[0.12em] uppercase text-brand-600">
-              {dict.home.aboutKicker}
+        <div className="grid gap-x-[clamp(28px,5vw,64px)] gap-y-10 lg:grid-cols-[1fr_min(45%,440px)] items-start">
+          {/* LEFT — sidebar + content */}
+          <div className="flex flex-wrap gap-x-[clamp(28px,5vw,56px)] gap-y-8">
+            <div className="flex-none w-[180px] min-w-[160px]">
+              <div className="font-display text-[15px] font-extrabold text-brand">01</div>
+              <div className="mt-2 text-[13px] font-bold tracking-[0.12em] uppercase text-brand-600">
+                {dict.home.aboutKicker}
+              </div>
+              <div className="mt-[14px] h-[2px] w-10 bg-brand" />
+              <div className="mt-8 hidden sm:block">
+                <svg width="60" height="60" viewBox="0 0 60 60" fill="none" className="text-brand-50">
+                  <path d="M15 40 Q 10 40 10 32 Q 10 20 22 15 L 24 20 Q 16 24 16 30 L 22 30 Q 25 30 25 34 Q 25 40 20 40 Z M40 40 Q 35 40 35 32 Q 35 20 47 15 L 49 20 Q 41 24 41 30 L 47 30 Q 50 30 50 34 Q 50 40 45 40 Z" fill="currentColor" />
+                </svg>
+              </div>
             </div>
-            <div className="mt-[14px] h-[2px] w-10 bg-brand" />
-            {/* Decorative quote mark */}
-            <div className="mt-8 hidden sm:block">
-              <svg width="60" height="60" viewBox="0 0 60 60" fill="none" className="text-brand-50">
-                <path d="M15 40 Q 10 40 10 32 Q 10 20 22 15 L 24 20 Q 16 24 16 30 L 22 30 Q 25 30 25 34 Q 25 40 20 40 Z M40 40 Q 35 40 35 32 Q 35 20 47 15 L 49 20 Q 41 24 41 30 L 47 30 Q 50 30 50 34 Q 50 40 45 40 Z" fill="currentColor" />
-              </svg>
+            <div className="flex-1 basis-[320px] min-w-[280px]">
+              <h2 className="m-0 max-w-[20ch] text-[clamp(25px,3.2vw,36px)] font-extrabold leading-[1.28] text-navy">
+                {t("about_title", dict.home.aboutTitle)}
+              </h2>
+              <p className="mt-5 max-w-[62ch] text-[17px] leading-[1.9] text-ink-soft">
+                {t("about_text", dict.home.aboutText)}
+              </p>
             </div>
           </div>
-          <div className="flex-1 basis-[420px] min-w-[300px]">
-            <h2 className="m-0 max-w-[20ch] text-[clamp(25px,3.2vw,36px)] font-extrabold leading-[1.28] text-navy">
-              {t("about_title", dict.home.aboutTitle)}
-            </h2>
-            <p className="mt-5 max-w-[62ch] text-[17px] leading-[1.9] text-ink-soft">
-              {t("about_text", dict.home.aboutText)}
-            </p>
+
+          {/* RIGHT — photo */}
+          <div className="relative">
+            {content["about_photo_url"] ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={content["about_photo_url"]}
+                alt=""
+                referrerPolicy="no-referrer"
+                className="w-full h-auto shadow-xl shadow-black/10"
+              />
+            ) : (
+              <div
+                className="relative aspect-[4/5] border border-line grid place-items-center bg-brand-50/40"
+              >
+                <div className="text-center px-4">
+                  <div className="text-[48px] mb-2">📸</div>
+                  <div className="font-mono text-[11px] text-ink-subtle">
+                    [ ใส่ about_photo_url ใน sheet content ]
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* ════════════════ SECTION 02 — PILLARS ════════════════ */}
+      {/* ════════════════ SECTION 02 — PILLARS (cards with photos) ════════════════ */}
       <section className="bg-white border-y border-line">
         <div className="container py-[clamp(48px,7vw,84px)]">
-          <div className="mb-2 flex items-center gap-4">
+          <div className="mb-8 flex items-center gap-4">
             <span className="font-display text-[15px] font-extrabold text-brand">02</span>
             <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
               {dict.home.pillarsTitle}
@@ -327,25 +353,56 @@ export default async function HomePage({
             <span className="flex-1 h-px bg-line" />
           </div>
 
-          {pillars(locale).map((p, idx) => (
-            <div
-              key={p.title}
-              className="flex flex-wrap items-start gap-x-[clamp(18px,4vw,56px)] gap-y-3 border-b border-line py-[clamp(24px,3vw,34px)] transition-colors hover:bg-brand-50/40"
-            >
-              <div
-                className="font-display flex-none w-[72px] text-[clamp(32px,4vw,46px)] font-extrabold leading-none text-brand-50"
-                aria-hidden
-              >
-                {String(idx + 1).padStart(2, "0")}
-              </div>
-              <h3 className="flex-none w-[260px] max-w-full m-0 text-[clamp(18px,2vw,21px)] font-bold text-navy">
-                {p.title}
-              </h3>
-              <p className="flex-1 basis-[300px] min-w-[240px] m-0 text-[15.5px] leading-[1.8] text-ink-muted">
-                {p.desc}
-              </p>
-            </div>
-          ))}
+          <div className="grid gap-5 md:grid-cols-3">
+            {pillars(locale).map((p, idx) => {
+              const photoUrl = content[`pillar_${idx + 1}_photo_url`];
+              return (
+                <div
+                  key={p.title}
+                  className="group flex flex-col overflow-hidden border border-line bg-white transition-all duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-brand hover:shadow-soft hover:-translate-y-0.5"
+                >
+                  {/* Photo */}
+                  <div
+                    className="relative bg-gradient-to-br from-brand-50 to-brand-100"
+                    style={{ aspectRatio: "4 / 3" }}
+                  >
+                    {photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={photoUrl}
+                        alt={p.title}
+                        referrerPolicy="no-referrer"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 grid place-items-center">
+                        <span
+                          className="font-display text-[clamp(64px,10vw,110px)] font-extrabold text-brand-600/20 leading-none"
+                          aria-hidden
+                        >
+                          {String(idx + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+                    )}
+                    {/* Number chip overlay */}
+                    <span className="absolute top-3 start-3 inline-block bg-navy/85 backdrop-blur-sm px-2.5 py-1 font-display text-[11px] font-extrabold text-brand-200">
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
+                  </div>
+
+                  {/* Text */}
+                  <div className="flex flex-1 flex-col gap-3 p-5">
+                    <h3 className="m-0 text-[clamp(17px,1.6vw,20px)] font-bold leading-tight text-navy">
+                      {p.title}
+                    </h3>
+                    <p className="m-0 text-[14.5px] leading-[1.75] text-ink-muted">
+                      {p.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
