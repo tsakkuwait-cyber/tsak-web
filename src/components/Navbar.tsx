@@ -26,7 +26,10 @@ export function Navbar({
   const supportHref = `/${locale}/contact`;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-line bg-white/[0.93] backdrop-blur-md">
+    <header
+      dir="ltr"
+      className="sticky top-0 z-50 w-full border-b border-line bg-white/[0.93] backdrop-blur-md"
+    >
       {/* accent bar 3px ตาม petrol design */}
       <div className="h-[3px] w-full bg-brand" />
       <div className="container flex h-16 items-center justify-between gap-3">

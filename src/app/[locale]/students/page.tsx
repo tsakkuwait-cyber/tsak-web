@@ -94,6 +94,38 @@ export default async function StudentsPage({
               "radial-gradient(closest-side, rgba(127,216,207,0.14), transparent)",
           }}
         />
+        {/* Kuwait Towers silhouette — line style elegant */}
+        <svg
+          viewBox="0 0 240 220"
+          className="absolute end-6 sm:end-16 bottom-0 pointer-events-none"
+          style={{
+            width: "min(30vw, 280px)",
+            height: "min(30vw, 280px)",
+            opacity: 0.22,
+          }}
+          fill="none"
+          stroke="#7FD8CF"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {/* Tall tower (with 2 spheres + spire) */}
+          <line x1="120" y1="220" x2="120" y2="30" />
+          <line x1="118" y1="30" x2="122" y2="30" />
+          <line x1="120" y1="30" x2="120" y2="12" />
+          <circle cx="120" cy="60" r="18" />
+          <circle cx="120" cy="110" r="14" />
+          {/* Medium tower (1 sphere) */}
+          <line x1="170" y1="220" x2="170" y2="85" />
+          <circle cx="170" cy="105" r="11" />
+          <line x1="170" y1="85" x2="170" y2="72" />
+          {/* Short spire */}
+          <line x1="200" y1="220" x2="200" y2="115" />
+          <line x1="198" y1="115" x2="202" y2="115" />
+          <line x1="200" y1="115" x2="200" y2="102" />
+          {/* Ground line */}
+          <line x1="60" y1="220" x2="230" y2="220" strokeWidth="0.8" opacity="0.6" />
+        </svg>
 
         <div className="container relative flex flex-wrap items-end justify-between gap-8 py-[clamp(52px,7vw,84px)]">
           <div className="flex-1 basis-[440px] min-w-[300px]">

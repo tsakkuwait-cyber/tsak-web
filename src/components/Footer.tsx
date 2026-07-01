@@ -1,14 +1,17 @@
 import Link from "next/link";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
+import { getChannels } from "@/lib/google-sheets";
 
 /**
- * Footer — match petrol design
- *   - พื้น navy-dark (เข้มกว่า navy ของ hero)
- *   - 4 cols: brand+about | quick links | contact | follow
- *   - bottom bar เล็กๆ
+ * Footer — dark navy 4 columns
+ *  - Column 1: brand + about
+ *  - Column 2: quick links
+ *  - Column 3: contact (จาก channels sheet — dynamic)
+ *  - Column 4: follow / lang note
+ *  - Bottom: rights + developer credit
  */
-export function Footer({
+export async function Footer({
   locale,
   dict,
 }: {
@@ -22,6 +25,15 @@ export function Footer({
     { href: `/${locale}/activities`, label: dict.nav.activities },
     { href: `/${locale}/contact`, label: dict.nav.contact },
   ];
+
+  // Pull contact channels from sheet (server-side)
+  const channels = await getChannels(locale);
+  const contactChannels = channels.filter((ch) =>
+    ["email", "phone", "address"].includes(ch.key)
+  );
+  const socialChannels = channels.filter((ch) =>
+    ["facebook", "instagram", "line"].includes(ch.key)
+  );
 
   return (
     <footer className="bg-navy-dark text-[#9CC6C2]">
@@ -65,31 +77,98 @@ export function Footer({
           </div>
         </div>
 
-        {/* Column 3 — Contact */}
+        {/* Column 3 — Contact (from sheet) */}
         <div>
           <div className="mb-4 text-[13px] font-bold uppercase tracking-wider text-brand-200">
             {dict.footer.contactT}
           </div>
           <div className="flex flex-col gap-[11px] text-[14.5px]">
-            <span dir="auto">info@thaikuwait.org</span>
-            <span dir="ltr">+965 5xxx xxxx</span>
-            <span dir="auto">{dict.footer.location}</span>
+            {contactChannels.length > 0 ? (
+              contactChannels.map((ch) => {
+                const content = (
+                  <span dir="auto" className="truncate">
+                    {ch.value}
+                  </span>
+                );
+                return ch.href ? (
+                  <a
+                    key={ch.key}
+                    href={ch.href}
+                    className="hover:text-white transition-colors truncate"
+                  >
+                    {content}
+                  </a>
+                ) : (
+                  <span key={ch.key} className="truncate">{content}</span>
+                );
+              })
+            ) : (
+              <span dir="auto">info@thaikuwait.org</span>
+            )}
           </div>
         </div>
 
-        {/* Column 4 — Follow */}
+        {/* Column 4 — Follow / Social */}
         <div>
           <div className="mb-4 text-[13px] font-bold uppercase tracking-wider text-brand-200">
             {dict.footer.follow}
           </div>
-          <p className="m-0 text-[13px] leading-relaxed">{dict.footer.langNote}</p>
+          {socialChannels.length > 0 ? (
+            <div className="flex flex-col gap-[11px] text-[14.5px]">
+              {socialChannels.map((ch) =>
+                ch.href ? (
+                  <a
+                    key={ch.key}
+                    href={ch.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 hover:text-white transition-colors"
+                  >
+                    <span className="grid h-6 w-6 place-items-center bg-white/10 text-[11px] font-bold text-brand-200">
+                      {ch.icon}
+                    </span>
+                    <span dir="auto" className="truncate">
+                      {ch.value}
+                    </span>
+                  </a>
+                ) : (
+                  <span key={ch.key} className="inline-flex items-center gap-2">
+                    <span className="grid h-6 w-6 place-items-center bg-white/10 text-[11px] font-bold text-brand-200">
+                      {ch.icon}
+                    </span>
+                    <span dir="auto" className="truncate">
+                      {ch.value}
+                    </span>
+                  </span>
+                )
+              )}
+            </div>
+          ) : (
+            <p className="m-0 text-[13px] leading-relaxed">{dict.footer.langNote}</p>
+          )}
         </div>
       </div>
 
-      {/* bottom bar */}
+      {/* bottom bar — rights + developer credit */}
       <div className="border-t border-white/10">
-        <div className="container py-5 text-center text-[13px]">
-          © {year} {dict.brand.name} · {dict.footer.rights}
+        <div className="container flex flex-wrap items-center justify-between gap-3 py-5 text-[12.5px]">
+          <div>
+            © {year} {dict.brand.name} · {dict.footer.rights}
+          </div>
+          <div className="flex items-center gap-2 text-[12px]">
+            <span className="text-[#7FD8CF]/70">Developed by</span>
+            <a
+              href="https://github.com/tsakkuwait-cyber"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-semibold text-brand-200 hover:text-white transition-colors"
+            >
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-brand text-white text-[10px] font-extrabold">
+                M
+              </span>
+              Munardil
+            </a>
+          </div>
         </div>
       </div>
     </footer>

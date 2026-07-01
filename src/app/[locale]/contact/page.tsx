@@ -268,20 +268,50 @@ export default async function ContactPage({
 
   return (
     <>
-      {/* ── HERO ─────────────────────────────────────────── */}
-      <section className="container pt-[clamp(44px,6vw,72px)] pb-[clamp(28px,4vw,40px)]">
-        <div className="mb-4 flex items-center gap-3.5">
-          <span className="font-display text-[14px] font-extrabold text-brand">01</span>
-          <span className="text-[12.5px] font-bold tracking-[0.14em] uppercase text-brand-600">
-            {dict.nav.contact}
-          </span>
+      {/* ── HERO with subtle theme bg ────────────────── */}
+      <section className="relative overflow-hidden">
+        <div
+          className="absolute -top-32 -end-32 w-[420px] h-[420px] rounded-full pointer-events-none"
+          style={{
+            background: "radial-gradient(closest-side, rgba(16,150,141,0.10), transparent)",
+          }}
+        />
+        <svg
+          viewBox="0 0 400 80"
+          className="absolute end-0 bottom-0 pointer-events-none"
+          style={{ width: "min(50vw, 420px)", height: "80px", opacity: 0.12 }}
+          fill="none"
+          stroke="#0C3B45"
+          strokeWidth="1"
+          strokeLinecap="round"
+        >
+          <line x1="60" y1="80" x2="60" y2="45" />
+          <line x1="90" y1="80" x2="90" y2="30" />
+          <circle cx="90" cy="22" r="5" />
+          <line x1="120" y1="80" x2="120" y2="52" />
+          <line x1="145" y1="80" x2="145" y2="40" />
+          <circle cx="145" cy="34" r="4" />
+          <line x1="170" y1="80" x2="170" y2="48" />
+          <line x1="195" y1="80" x2="195" y2="35" />
+          <line x1="220" y1="80" x2="220" y2="42" />
+          <line x1="245" y1="80" x2="245" y2="50" />
+          <line x1="0" y1="80" x2="400" y2="80" strokeWidth="0.6" opacity="0.5" />
+        </svg>
+
+        <div className="container relative pt-[clamp(44px,6vw,72px)] pb-[clamp(28px,4vw,40px)]">
+          <div className="mb-4 flex items-center gap-3.5">
+            <span className="font-display text-[14px] font-extrabold text-brand">01</span>
+            <span className="text-[12.5px] font-bold tracking-[0.14em] uppercase text-brand-600">
+              {dict.nav.contact}
+            </span>
+          </div>
+          <h1 className="m-0 max-w-[16ch] text-[clamp(27px,3.6vw,42px)] font-extrabold leading-[1.18] text-navy">
+            {dict.contact.title}
+          </h1>
+          <p className="mt-3.5 max-w-[62ch] text-[16px] leading-[1.8] text-ink-soft">
+            {dict.contact.intro}
+          </p>
         </div>
-        <h1 className="m-0 max-w-[16ch] text-[clamp(27px,3.6vw,42px)] font-extrabold leading-[1.18] text-navy">
-          {dict.contact.title}
-        </h1>
-        <p className="mt-3.5 max-w-[62ch] text-[16px] leading-[1.8] text-ink-soft">
-          {dict.contact.intro}
-        </p>
       </section>
 
       {/* ── 2-COL: Councils (LEFT) + Channels/Support (RIGHT) ─── */}

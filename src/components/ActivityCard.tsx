@@ -82,7 +82,7 @@ export function ActivityCard({
           )}
         </div>
 
-        {/* TEXT */}
+        {/* TEXT — card แสดงแค่ date + title + location (desc อยู่ใน modal) */}
         <div className="flex flex-1 flex-col p-3 sm:p-[18px] min-w-0">
           <time className="font-display text-[11.5px] sm:text-[12.5px] font-bold text-brand-600">
             {act.date}
@@ -90,13 +90,8 @@ export function ActivityCard({
           <h3 className="mt-1 sm:mt-2 text-[14.5px] sm:text-[17px] font-bold leading-snug text-navy line-clamp-2">
             {act.title}
           </h3>
-          {act.description && (
-            <p className="mt-1 text-[12.5px] sm:text-[13.5px] leading-snug text-ink-muted line-clamp-2">
-              {act.description}
-            </p>
-          )}
           {act.location && (
-            <p className="mt-1.5 sm:mt-2 text-[11.5px] sm:text-[12px] text-ink-subtle">
+            <p className="mt-auto pt-2 text-[11.5px] sm:text-[12px] text-ink-subtle">
               📍 {act.location}
             </p>
           )}
