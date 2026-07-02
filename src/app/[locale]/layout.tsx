@@ -57,13 +57,6 @@ export function generateStaticParams() {
  *  Metadata ตามภาษา (SEO + แท็บเบราว์เซอร์)
  * ------------------------------------------------------------ */
 
-// Base URL — เอาไว้ทำ absolute URLs ใน OG tags
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "https://tsak-web.vercel.app");
-
 export async function generateMetadata({
   params,
 }: {
@@ -71,51 +64,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   if (!isLocale(params.locale)) return {};
   const dict = await getDictionary(params.locale);
-  const title = dict.meta.title;
-  const description = dict.meta.description;
-  const url = `${SITE_URL}/${params.locale}`;
-
-  const ogLocale =
-    params.locale === "th" ? "th_TH" : params.locale === "ar" ? "ar_KW" : "en_US";
-
   return {
-    metadataBase: new URL(SITE_URL),
-    title,
-    description,
-    // Open Graph — สำหรับ Facebook, LINE, WhatsApp, Discord
-    openGraph: {
-      type: "website",
-      title,
-      description,
-      url,
-      siteName: dict.brand.name,
-      locale: ogLocale,
-      // opengraph-image.tsx จะถูก auto-detected
-    },
-    // Twitter/X — auto-picked from openGraph if not set
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-    },
-    // Alternates — บอก Google รู้ว่าเว็บมีหลายภาษา
-    alternates: {
-      canonical: url,
-      languages: {
-        th: `${SITE_URL}/th`,
-        en: `${SITE_URL}/en`,
-        ar: `${SITE_URL}/ar`,
-        "x-default": `${SITE_URL}/th`,
-      },
-    },
-    // Icons + theme color
-    icons: {
-      icon: "/logo.jpg",
-      apple: "/logo.jpg",
-    },
-    other: {
-      "theme-color": "#0C3B45",
-    },
+    title: dict.meta.title,
+    description: dict.meta.description,
   };
 }
 
