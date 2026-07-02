@@ -10,6 +10,11 @@ const AUDIENCE = {
   female: { bg: "bg-[#FBEEF2]", text: "text-[#B0395A]" },
 } as const;
 
+/** ลด size ของ Drive thumbnail URL เพื่อโหลด grid เร็วขึ้น (w1600 → w400) */
+function smallerImg(url: string, size = 400): string {
+  return url.replace(/([?&]sz=)w\d+/i, `$1w${size}`);
+}
+
 /**
  * ActivityCard — card + modal + full-screen lightbox
  *   Card: thumbnail + date + audience + title + location
@@ -29,6 +34,7 @@ export function ActivityCard({
   };
 }) {
   const [open, setOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -40,11 +46,14 @@ export function ActivityCard({
     setMounted(true);
   }, []);
 
-  // Modal esc/scroll lock
+  // Modal esc/scroll lock — ESC ปิดตามลำดับ: lightbox → contact → modal
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !lightboxOpen) setOpen(false);
+      if (e.key !== "Escape") return;
+      if (lightboxOpen) return; // lightbox มี handler ของตัวเอง
+      if (contactOpen) setContactOpen(false);
+      else setOpen(false);
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -52,12 +61,11 @@ export function ActivityCard({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [open, lightboxOpen]);
+  }, [open, contactOpen, lightboxOpen]);
 
-  // Lightbox esc/nav
+  // Lightbox esc/nav (ไม่ reset idx — เข้าจาก thumbnail idx ไหน ต้องอยู่ idx นั้น)
   useEffect(() => {
     if (!lightboxOpen) return;
-    setImgIdx(0);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setLightboxOpen(false);
       if (e.key === "ArrowRight")
@@ -81,9 +89,11 @@ export function ActivityCard({
           {coverSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={coverSrc}
+              src={smallerImg(coverSrc, 600)}
               alt={act.title}
               referrerPolicy="no-referrer"
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
             />
           ) : (
@@ -184,29 +194,25 @@ export function ActivityCard({
                 </p>
               )}
 
-              {/* ─── ดูประมวลรูปภาพ button ─── */}
+              {/* text link — ขวาบน เส้นขีด บนสถานที่ */}
               {total > 0 && (
-                <div className="mt-6">
+                <div className="mt-5 flex justify-end">
                   <button
                     type="button"
-                    onClick={() => {
-                      setImgIdx(0);
-                      setLightboxOpen(true);
-                    }}
-                    className="inline-flex items-center gap-2.5 bg-brand text-white px-6 py-3.5 text-[14px] font-bold shadow-cta hover:bg-brand-600 hover:scale-[1.02] transition-all duration-200"
+                    onClick={() => setContactOpen(true)}
+                    className="group inline-flex items-baseline gap-1.5 text-[13px] font-bold text-brand hover:text-brand-600 transition-colors"
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="5" width="18" height="14" rx="2" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                    {labels.viewPhotos}
-                    <span className="opacity-80 font-display">· {total}</span>
+                    <span className="underline underline-offset-4 decoration-brand/40 group-hover:decoration-brand">
+                      {labels.viewPhotos}
+                    </span>
+                    <span className="font-display opacity-70">· {total}</span>
+                    <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
                   </button>
                 </div>
               )}
 
               {act.location && (
-                <div className="mt-6 border-t border-line pt-4">
+                <div className="mt-3 border-t border-line pt-4">
                   <p className="text-[13px] text-ink-muted">
                     <span className="font-bold text-navy">📍 </span>
                     {act.location}
@@ -217,6 +223,77 @@ export function ActivityCard({
           </div>
         </div>
       )}
+
+      {/* ═══════ CONTACT SHEET GRID (Portal — thumbnail overview) ═══════ */}
+      {mounted &&
+        contactOpen &&
+        createPortal(
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setContactOpen(false)}
+            className="fixed inset-0 z-[150] flex flex-col bg-navy/95 backdrop-blur-md animate-in fade-in duration-300"
+          >
+            {/* Header */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center justify-between gap-4 border-b border-white/10 bg-navy-dark px-4 sm:px-8 py-4 flex-none"
+            >
+              <div className="min-w-0">
+                <div className="text-[10.5px] font-bold tracking-[0.2em] uppercase text-brand-200">
+                  {labels.viewPhotos} · {total}
+                </div>
+                <h3 className="mt-0.5 truncate text-[15px] sm:text-[17px] font-bold text-white">
+                  {act.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContactOpen(false)}
+                aria-label={labels.closeLabel}
+                className="grid h-11 w-11 flex-none place-items-center rounded-full bg-white/10 text-white transition-all duration-200 hover:bg-white/20 hover:scale-110 hover:rotate-90"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Grid */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex-1 overflow-y-auto p-4 sm:p-8"
+            >
+              <div className="mx-auto max-w-[1200px] grid gap-2 sm:gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {act.images.map((src, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setImgIdx(i);
+                      setLightboxOpen(true);
+                    }}
+                    className="group relative aspect-[4/3] overflow-hidden bg-black/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={smallerImg(src, 400)}
+                      alt={`${act.title} ${i + 1}`}
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-[1.06]"
+                    />
+                    <span className="absolute bottom-1.5 end-1.5 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white opacity-70 group-hover:opacity-100 transition-opacity">
+                      {i + 1}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
 
       {/* ═══════ FULLSCREEN LIGHTBOX (Portal to body) ═══════ */}
       {mounted &&

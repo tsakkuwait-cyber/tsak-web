@@ -511,9 +511,14 @@ export async function getActivities(locale: Locale): Promise<ActivityItem[]> {
     filtered.map(async (r) => {
       // image_url = folder URL / comma-separated URLs (gallery)
       const galleryImages = await expandImageUrls(r.image_url || "");
-      const aud = (r.audience ?? "all").toLowerCase();
+      // รองรับทั้ง key อังกฤษ (all/male/female) และ label ไทย (ทุกคน/ผู้ชาย/ผู้หญิง)
+      const audRaw = String(r.audience ?? "").trim().toLowerCase();
       const audience: ActivityItem["audience"] =
-        aud === "male" ? "male" : aud === "female" ? "female" : "all";
+        audRaw === "male" || audRaw === "ผู้ชาย" || audRaw === "ชาย"
+          ? "male"
+          : audRaw === "female" || audRaw === "ผู้หญิง" || audRaw === "หญิง"
+          ? "female"
+          : "all";
 
       // cover_url = single file URL OR folder URL (smart handling)
       let coverUrl = "";
