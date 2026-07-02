@@ -79,7 +79,16 @@ export default async function HomePage({
   const ctaReasons = [d.ctaReason1, d.ctaReason2, d.ctaReason3].filter(Boolean);
 
   // Recent highlights (top 3)
-  const recentHighlights = highlights.slice(0, 4);
+  // Group highlights by collection first, then take top N groups (album-friendly)
+  const highlightGroupMap = new Map<string, typeof highlights>();
+  for (const h of highlights) {
+    const key = h.collection || `__solo_${h.id}`;
+    if (!highlightGroupMap.has(key)) highlightGroupMap.set(key, []);
+    highlightGroupMap.get(key)!.push(h);
+  }
+  const recentHighlights = Array.from(highlightGroupMap.values())
+    .slice(0, 4)
+    .flat();
 
   const typeLabel = (t: HighlightType) => {
     const s = dict.students as Record<string, string>;
@@ -387,20 +396,15 @@ export default async function HomePage({
             <span className="flex-1 h-px bg-line" />
           </div>
 
-          {/* Polaroid-style tilted cards — ดูมีชีวิตชีวา (มือถือ 1 col + rot น้อย, desktop 3 col + rot มาก) */}
+          {/* Photo cards — clean grid, ไม่เอียง */}
           <div className="grid gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-y-4">
             {pillars(locale).map((p, idx) => {
               const photoUrl = content[`pillar_${idx + 1}_photo_url`];
-              const rotations = [
-                "-rotate-[1.5deg] sm:-rotate-[3deg]",
-                "rotate-[1deg] sm:rotate-[2deg]",
-                "-rotate-[1deg] sm:-rotate-[2deg]",
-              ];
               return (
                 <div key={p.title} className="group">
-                  {/* Photo card - tilted */}
+                  {/* Photo card */}
                   <div
-                    className={`relative overflow-hidden shadow-[0_12px_32px_rgba(0,0,0,0.12)] bg-navy transition-transform duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-0 group-hover:scale-[1.02] group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] ${rotations[idx]}`}
+                    className="relative overflow-hidden shadow-[0_12px_32px_rgba(0,0,0,0.12)] bg-navy transition-all duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02] group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)]"
                     style={{ aspectRatio: "1 / 1" }}
                   >
                     {photoUrl ? (

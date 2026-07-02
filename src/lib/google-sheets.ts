@@ -1,5 +1,5 @@
 import "server-only";
-import { google, type sheets_v4 } from "googleapis";
+import { google, type sheets_v4, type drive_v3 } from "googleapis";
 
 /**
  * ============================================================
@@ -57,29 +57,95 @@ import { google, type sheets_v4 } from "googleapis";
 // 1) Singleton client — สร้างครั้งเดียวต่อ process
 // ---------------------------------------------------------------
 
-let cachedSheetsClient: sheets_v4.Sheets | null = null;
+let cachedAuth: InstanceType<typeof google.auth.JWT> | null = null;
 
-function getSheetsClient(): sheets_v4.Sheets {
-  if (cachedSheetsClient) return cachedSheetsClient;
-
+function getAuth() {
+  if (cachedAuth) return cachedAuth;
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
   const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-
   if (!clientEmail || !privateKey) {
-    throw new Error(
-      "[google-sheets] ขาดค่า GOOGLE_CLIENT_EMAIL หรือ GOOGLE_PRIVATE_KEY ใน .env.local"
-    );
+    throw new Error("[google-sheets] ขาดค่า GOOGLE_CLIENT_EMAIL หรือ GOOGLE_PRIVATE_KEY");
   }
-
-  const auth = new google.auth.JWT({
+  cachedAuth = new google.auth.JWT({
     email: clientEmail,
-    // Vercel/CI เก็บ env เป็น string จึงต้อง replace \n ให้กลับเป็น newline จริง
     key: privateKey.replace(/\\n/g, "\n"),
-    scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+    scopes: [
+      "https://www.googleapis.com/auth/spreadsheets.readonly",
+      "https://www.googleapis.com/auth/drive.readonly",
+    ],
   });
+  return cachedAuth;
+}
 
-  cachedSheetsClient = google.sheets({ version: "v4", auth });
+let cachedSheetsClient: sheets_v4.Sheets | null = null;
+function getSheetsClient(): sheets_v4.Sheets {
+  if (cachedSheetsClient) return cachedSheetsClient;
+  cachedSheetsClient = google.sheets({ version: "v4", auth: getAuth() });
   return cachedSheetsClient;
+}
+
+let cachedDriveClient: drive_v3.Drive | null = null;
+function getDriveClient(): drive_v3.Drive {
+  if (cachedDriveClient) return cachedDriveClient;
+  cachedDriveClient = google.drive({ version: "v3", auth: getAuth() });
+  return cachedDriveClient;
+}
+
+/**
+ * ถ้า URL เป็น Google Drive folder → ดึงรูปทั้งหมดในโฟลเดอร์
+ * รองรับ format: https://drive.google.com/drive/folders/{FOLDER_ID}?...
+ */
+function extractFolderId(url: string): string | null {
+  const m = url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+
+const folderCache = new Map<string, string[]>();
+
+async function listDriveFolderImages(folderId: string): Promise<string[]> {
+  if (folderCache.has(folderId)) return folderCache.get(folderId)!;
+  try {
+    const drive = getDriveClient();
+    const res = await drive.files.list({
+      q: `'${folderId}' in parents and mimeType contains 'image/' and trashed = false`,
+      fields: "files(id,name)",
+      orderBy: "name",
+      pageSize: 100,
+    });
+    const files = res.data.files ?? [];
+    const urls = files
+      .filter((f) => f.id)
+      .map((f) => `https://lh3.googleusercontent.com/d/${f.id}=w1600`);
+    folderCache.set(folderId, urls);
+    return urls;
+  } catch (err) {
+    console.error(`[drive] อ่าน folder "${folderId}" ล้มเหลว:`, err);
+    return [];
+  }
+}
+
+/**
+ * แปลง image_url string (comma/newline separated) เป็น array ของรูป
+ * รองรับทั้ง single file URL และ folder URL (ดึงทุกรูปในโฟลเดอร์)
+ */
+async function expandImageUrls(raw: string): Promise<string[]> {
+  if (!raw) return [];
+  const parts = raw
+    .split(/[,\n]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const out: string[] = [];
+  for (const p of parts) {
+    const folderId = extractFolderId(p);
+    if (folderId) {
+      const folderImgs = await listDriveFolderImages(folderId);
+      out.push(...folderImgs);
+    } else {
+      const normalized = normalizeImageUrl(p);
+      if (normalized) out.push(normalized);
+    }
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------
@@ -187,14 +253,15 @@ export interface StatItem {
 export interface ActivityItem {
   id: string;
   date: string;
-  /** URL รูปทั้งหมด (parse จาก image_url ที่คั่นด้วย comma หรือขึ้นบรรทัดใหม่) */
+  /** URL รูปทั้งหมด (parse จาก image_url ที่คั่นด้วย comma/newline + expand folder) */
   images: string[];
-  /** รูปแรก — ใช้แสดงเป็น thumbnail บนการ์ด */
+  /** รูปแรก — ใช้แสดงเป็น thumbnail บนการ์ด (fallback ถ้าไม่มี coverUrl) */
   imageUrl: string;
+  /** รูปหน้าปกเฉพาะ (ถ้าตั้งใน sheet — ใช้แทน images[0] ในการ์ด) */
+  coverUrl: string;
   title: string;
   description: string;
   location: string;
-  /** กลุ่มเป้าหมาย: 'all' | 'male' | 'female' (ใช้ตัดสินใจ tag chip) */
   audience: "all" | "male" | "female";
 }
 
@@ -424,28 +491,28 @@ export async function getContent(locale: Locale): Promise<Record<string, string>
 /** อ่านรายการกิจกรรม — กรองเฉพาะที่ published = TRUE และเรียง date desc */
 export async function getActivities(locale: Locale): Promise<ActivityItem[]> {
   const rows = await getSheet("activities");
-  return rows
-    .filter((r) => r.published?.toUpperCase() === "TRUE")
-    .map((r) => {
-      // image_url รองรับหลายรูป: คั่นด้วย "," หรือขึ้นบรรทัดใหม่
-      // แปลง Google Drive URL ทุกรูปเป็น format ที่แสดงได้
-      const images = (r.image_url || "")
-        .split(/[,\n]/)
-        .map((s) => normalizeImageUrl(s.trim()))
-        .filter(Boolean);
+  const filtered = rows.filter((r) => r.published?.toUpperCase() === "TRUE");
+  // ประมวลผลแบบ parallel (แต่ละ activity อาจดึง Drive folder)
+  const items = await Promise.all(
+    filtered.map(async (r) => {
+      // image_url รองรับหลายรูป: comma/newline + Drive folder URL (expand ทุกรูป)
+      const images = await expandImageUrls(r.image_url || "");
       const aud = (r.audience ?? "all").toLowerCase();
       const audience: ActivityItem["audience"] =
         aud === "male" ? "male" : aud === "female" ? "female" : "all";
+      const coverUrl = normalizeImageUrl(r.cover_url ?? "");
       return {
         id: r.id,
         date: r.date,
         images,
-        imageUrl: images[0] ?? "",
+        imageUrl: coverUrl || images[0] || "",
+        coverUrl,
         title: r[`title_${locale}`] ?? r.title_th ?? r.title_en ?? "",
         description: r[`desc_${locale}`] ?? r.desc_th ?? r.desc_en ?? "",
         location: r[`location_${locale}`] ?? r.location_th ?? r.location_en ?? "",
         audience,
       };
     })
-    .sort((a, b) => (a.date < b.date ? 1 : -1));
+  );
+  return items.sort((a, b) => (a.date < b.date ? 1 : -1));
 }
