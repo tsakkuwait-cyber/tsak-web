@@ -91,7 +91,7 @@ export function HighlightsGallery({
   return (
     <>
       {/* ═══════════ BOOK COVERS GRID ═══════════ */}
-      <div className="grid gap-x-5 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-5 sm:gap-y-8 md:grid-cols-3 lg:grid-cols-4">
         {groups.map((g) => {
           const h = g.cover;
           const style = TYPE_STYLE[h.type];

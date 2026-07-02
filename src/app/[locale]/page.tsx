@@ -7,10 +7,12 @@ import {
   getActivities,
   getHighlights,
   getContent,
+  getChannels,
   type HighlightType,
 } from "@/lib/google-sheets";
 import { DonateButton } from "@/components/DonateButton";
 import { ActivityGallery } from "@/components/ActivityGallery";
+import { HighlightsGallery } from "@/components/HighlightsGallery";
 
 /**
  * Home — engaging editorial layout
@@ -44,13 +46,18 @@ export default async function HomePage({
   if (!isLocale(params.locale)) notFound();
   const locale: Locale = params.locale;
 
-  const [dict, stats, activities, highlights, content] = await Promise.all([
+  const [dict, stats, activities, highlights, content, channels] = await Promise.all([
     getDictionary(locale),
     getStats(locale),
     getActivities(locale),
     getHighlights(locale),
     getContent(locale),
+    getChannels(locale),
   ]);
+  // CTA email — จาก channels sheet
+  const supportEmail =
+    channels.find((c) => c.key === "email")?.value ?? "info@thaikuwait.org";
+  const supportEmailHref = `mailto:${supportEmail}?subject=Support%20TSAK`;
 
   const t = (key: string, fallback: string) => content[key] ?? fallback;
   const estYear = Number(content["est_year"]) || 2011;
@@ -72,7 +79,7 @@ export default async function HomePage({
   const ctaReasons = [d.ctaReason1, d.ctaReason2, d.ctaReason3].filter(Boolean);
 
   // Recent highlights (top 3)
-  const recentHighlights = highlights.slice(0, 3);
+  const recentHighlights = highlights.slice(0, 4);
 
   const typeLabel = (t: HighlightType) => {
     const s = dict.students as Record<string, string>;
@@ -289,11 +296,62 @@ export default async function HomePage({
         </div>
       </div>
 
-      {/* ════════════════ SECTION 01 — ABOUT (with photo) ════════════════ */}
-      <section className="container py-[clamp(58px,8vw,96px)]">
-        <div className="grid gap-x-[clamp(28px,5vw,64px)] gap-y-10 lg:grid-cols-[1fr_min(45%,440px)] items-start">
-          {/* LEFT — sidebar + content */}
-          <div className="flex flex-wrap gap-x-[clamp(28px,5vw,56px)] gap-y-8">
+      {/* ════════════════ SECTION 01 — ABOUT (photo left + building bg) ════════════════ */}
+      <section className="relative overflow-hidden py-[clamp(58px,8vw,96px)]">
+        {/* Building outline decorative — คูเวต tower/silhouette */}
+        <svg
+          viewBox="0 0 280 380"
+          className="absolute -end-8 top-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ width: "min(28vw, 320px)", height: "min(38vw, 420px)", opacity: 0.06 }}
+          fill="none"
+          stroke="#0C3B45"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {/* Tall tower + 2 spheres */}
+          <line x1="140" y1="380" x2="140" y2="60" />
+          <circle cx="140" cy="90" r="24" />
+          <circle cx="140" cy="145" r="18" />
+          <line x1="140" y1="60" x2="140" y2="30" />
+          {/* Medium tower */}
+          <line x1="200" y1="380" x2="200" y2="130" />
+          <circle cx="200" cy="155" r="14" />
+          <line x1="200" y1="130" x2="200" y2="110" />
+          {/* Short spire */}
+          <line x1="240" y1="380" x2="240" y2="180" />
+          <line x1="240" y1="180" x2="240" y2="165" />
+          {/* Ground line */}
+          <line x1="60" y1="380" x2="280" y2="380" strokeWidth="0.9" opacity="0.6" />
+        </svg>
+
+        <div className="container relative grid gap-x-[clamp(28px,5vw,64px)] gap-y-10 lg:grid-cols-[min(45%,440px)_1fr] items-start">
+          {/* LEFT — photo (สลับมาซ้ายเพื่อบาลานซ์กับ hero) */}
+          <div className="relative order-1 lg:order-none">
+            {content["about_photo_url"] ? (
+              <div className="group overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={content["about_photo_url"]}
+                  alt=""
+                  referrerPolicy="no-referrer"
+                  className="w-full h-auto shadow-xl shadow-black/10 transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
+                />
+              </div>
+            ) : (
+              <div className="relative aspect-[4/5] border border-line grid place-items-center bg-brand-50/40">
+                <div className="text-center px-4">
+                  <div className="text-[48px] mb-2">📸</div>
+                  <div className="font-mono text-[11px] text-ink-subtle">
+                    [ ใส่ about_photo_url ใน sheet content ]
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT — sidebar + content */}
+          <div className="order-2 lg:order-none flex flex-wrap gap-x-[clamp(28px,5vw,56px)] gap-y-8">
             <div className="flex-none w-[180px] min-w-[160px]">
               <div className="font-display text-[15px] font-extrabold text-brand">01</div>
               <div className="mt-2 text-[13px] font-bold tracking-[0.12em] uppercase text-brand-600">
@@ -315,30 +373,6 @@ export default async function HomePage({
               </p>
             </div>
           </div>
-
-          {/* RIGHT — photo */}
-          <div className="relative">
-            {content["about_photo_url"] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={content["about_photo_url"]}
-                alt=""
-                referrerPolicy="no-referrer"
-                className="w-full h-auto shadow-xl shadow-black/10"
-              />
-            ) : (
-              <div
-                className="relative aspect-[4/5] border border-line grid place-items-center bg-brand-50/40"
-              >
-                <div className="text-center px-4">
-                  <div className="text-[48px] mb-2">📸</div>
-                  <div className="font-mono text-[11px] text-ink-subtle">
-                    [ ใส่ about_photo_url ใน sheet content ]
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </section>
 
@@ -353,18 +387,21 @@ export default async function HomePage({
             <span className="flex-1 h-px bg-line" />
           </div>
 
-          <div className="grid gap-5 md:grid-cols-3">
+          {/* Polaroid-style tilted cards — ดูมีชีวิตชีวา (มือถือ 1 col + rot น้อย, desktop 3 col + rot มาก) */}
+          <div className="grid gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-y-4">
             {pillars(locale).map((p, idx) => {
               const photoUrl = content[`pillar_${idx + 1}_photo_url`];
+              const rotations = [
+                "-rotate-[1.5deg] sm:-rotate-[3deg]",
+                "rotate-[1deg] sm:rotate-[2deg]",
+                "-rotate-[1deg] sm:-rotate-[2deg]",
+              ];
               return (
-                <div
-                  key={p.title}
-                  className="group flex flex-col overflow-hidden border border-line bg-white transition-all duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-brand hover:shadow-soft hover:-translate-y-0.5"
-                >
-                  {/* Photo */}
+                <div key={p.title} className="group">
+                  {/* Photo card - tilted */}
                   <div
-                    className="relative bg-gradient-to-br from-brand-50 to-brand-100"
-                    style={{ aspectRatio: "4 / 3" }}
+                    className={`relative overflow-hidden shadow-[0_12px_32px_rgba(0,0,0,0.12)] bg-navy transition-transform duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-0 group-hover:scale-[1.02] group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] ${rotations[idx]}`}
+                    style={{ aspectRatio: "1 / 1" }}
                   >
                     {photoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -372,12 +409,12 @@ export default async function HomePage({
                         src={photoUrl}
                         alt={p.title}
                         referrerPolicy="no-referrer"
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
+                        className="absolute inset-0 h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="absolute inset-0 grid place-items-center">
+                      <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-brand-50 to-brand-100">
                         <span
-                          className="font-display text-[clamp(64px,10vw,110px)] font-extrabold text-brand-600/20 leading-none"
+                          className="font-display text-[clamp(80px,14vw,140px)] font-extrabold text-brand-600/25 leading-none"
                           aria-hidden
                         >
                           {String(idx + 1).padStart(2, "0")}
@@ -385,17 +422,17 @@ export default async function HomePage({
                       </div>
                     )}
                     {/* Number chip overlay */}
-                    <span className="absolute top-3 start-3 inline-block bg-navy/85 backdrop-blur-sm px-2.5 py-1 font-display text-[11px] font-extrabold text-brand-200">
+                    <span className="absolute top-3 start-3 inline-block bg-white/95 backdrop-blur-sm px-2.5 py-1 font-display text-[11px] font-extrabold text-navy shadow-sm">
                       {String(idx + 1).padStart(2, "0")}
                     </span>
                   </div>
 
-                  {/* Text */}
-                  <div className="flex flex-1 flex-col gap-3 p-5">
-                    <h3 className="m-0 text-[clamp(17px,1.6vw,20px)] font-bold leading-tight text-navy">
+                  {/* Text below */}
+                  <div className="mt-5 sm:mt-6 px-2">
+                    <h3 className="m-0 text-[clamp(17px,1.7vw,20px)] font-bold leading-tight text-navy">
                       {p.title}
                     </h3>
-                    <p className="m-0 text-[14.5px] leading-[1.75] text-ink-muted">
+                    <p className="mt-2 m-0 text-[14px] sm:text-[14.5px] leading-[1.75] text-ink-muted">
                       {p.desc}
                     </p>
                   </div>
@@ -406,7 +443,7 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* ════════════════ SECTION 03 — RECENT HIGHLIGHTS ════════════════ */}
+      {/* ════════════════ SECTION 03 — RECENT HIGHLIGHTS (Book gallery) ════════════════ */}
       {recentHighlights.length > 0 && (
         <section className="container py-[clamp(48px,7vw,84px)]">
           <div className="mb-8 flex items-center gap-4">
@@ -423,56 +460,19 @@ export default async function HomePage({
             </Link>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-3">
-            {recentHighlights.map((h) => {
-              const style = TYPE_STYLE[h.type];
-              return (
-                <Link
-                  key={h.id}
-                  href={`/${locale}/students`}
-                  className="group flex flex-col overflow-hidden border border-line bg-white transition-all duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-brand hover:shadow-soft hover:-translate-y-0.5"
-                >
-                  <div
-                    className="relative bg-gradient-to-br from-brand-50 to-brand-100"
-                    style={{ aspectRatio: "4 / 3" }}
-                  >
-                    {h.photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={h.photoUrl}
-                        alt={h.name}
-                        referrerPolicy="no-referrer"
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
-                        style={{ objectPosition: "center 20%" }}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 grid place-items-center">
-                        <span className="font-display text-[48px] font-extrabold text-brand-600/25">
-                          {h.name.slice(0, 1)}
-                        </span>
-                      </div>
-                    )}
-                    <span
-                      className={`absolute top-3 start-3 inline-block px-2.5 py-1 text-[11px] font-bold ${style.bg} ${style.text}`}
-                    >
-                      {typeLabel(h.type)}
-                    </span>
-                  </div>
-                  <div className="flex-1 p-4">
-                    <h3 className="text-[15px] font-extrabold leading-snug text-navy line-clamp-2">
-                      {h.headline}
-                    </h3>
-                    <div className="mt-1 text-[12px] font-semibold text-brand-600 truncate">
-                      {h.name}
-                      {h.institution && (
-                        <span className="text-ink-muted font-medium"> · {h.institution}</span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+          {/* Reuse HighlightsGallery — book cover + reading modal (ไม่ต้องไปหน้าอื่น) */}
+          <HighlightsGallery
+            highlights={recentHighlights.slice(0, 4)}
+            typeLabels={{
+              graduation: (dict.students as Record<string, string>).typeGraduation ?? "Graduation",
+              scholarship: (dict.students as Record<string, string>).typeScholarship ?? "Scholarship",
+              award: (dict.students as Record<string, string>).typeAward ?? "Award",
+              welcome: (dict.students as Record<string, string>).typeWelcome ?? "Welcome",
+              story: (dict.students as Record<string, string>).typeStory ?? "Story",
+              volunteer: (dict.students as Record<string, string>).typeVolunteer ?? "Volunteer",
+            }}
+            closeLabel="Close"
+          />
         </section>
       )}
 
@@ -504,12 +504,12 @@ export default async function HomePage({
                 {t("cta_band_text", dict.home.ctaBandText)}
               </p>
             </div>
-            <Link
-              href={`/${locale}/contact`}
+            <a
+              href={supportEmailHref}
               className="flex-none inline-flex items-center justify-center rounded-sm bg-brand px-[34px] py-4 text-[15px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.22)] hover:bg-brand-600 transition-colors whitespace-nowrap"
             >
               {dict.home.ctaBandBtn}
-            </Link>
+            </a>
           </div>
 
           {/* Reasons — 3 columns */}
