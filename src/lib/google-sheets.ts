@@ -495,17 +495,38 @@ export async function getActivities(locale: Locale): Promise<ActivityItem[]> {
   // ประมวลผลแบบ parallel (แต่ละ activity อาจดึง Drive folder)
   const items = await Promise.all(
     filtered.map(async (r) => {
-      // image_url รองรับหลายรูป: comma/newline + Drive folder URL (expand ทุกรูป)
-      const images = await expandImageUrls(r.image_url || "");
+      // image_url = folder URL / comma-separated URLs (gallery)
+      const galleryImages = await expandImageUrls(r.image_url || "");
       const aud = (r.audience ?? "all").toLowerCase();
       const audience: ActivityItem["audience"] =
         aud === "male" ? "male" : aud === "female" ? "female" : "all";
-      const coverUrl = normalizeImageUrl(r.cover_url ?? "");
+
+      // cover_url = single file URL OR folder URL (smart handling)
+      let coverUrl = "";
+      const rawCover = r.cover_url ?? "";
+      if (rawCover) {
+        const coverFolderId = extractFolderId(rawCover);
+        if (coverFolderId) {
+          // cover_url เป็น folder → เอารูปแรก + ใช้เป็น gallery ถ้า image_url ว่าง
+          const coverFolderImgs = await listDriveFolderImages(coverFolderId);
+          coverUrl = coverFolderImgs[0] ?? "";
+          if (galleryImages.length === 0) {
+            galleryImages.push(...coverFolderImgs);
+          }
+        } else {
+          coverUrl = normalizeImageUrl(rawCover);
+        }
+      }
+      // ถ้าไม่มี cover explicit → ใช้รูปแรกจาก gallery
+      if (!coverUrl && galleryImages.length > 0) {
+        coverUrl = galleryImages[0];
+      }
+
       return {
         id: r.id,
         date: r.date,
-        images,
-        imageUrl: coverUrl || images[0] || "",
+        images: galleryImages,
+        imageUrl: coverUrl,
         coverUrl,
         title: r[`title_${locale}`] ?? r.title_th ?? r.title_en ?? "",
         description: r[`desc_${locale}`] ?? r.desc_th ?? r.desc_en ?? "",

@@ -189,8 +189,11 @@ const TABS = {
 // ════════════════════════════════════════════════════════════════
 
 async function main() {
-  // flag --force = บังคับเขียนทับแม้มีข้อมูลอยู่แล้ว
+  // flag --force = บังคับเขียนทับแม้มีข้อมูลอยู่แล้ว (ยกเว้น protected tabs)
   const FORCE = process.argv.includes("--force");
+  // Tabs ที่มีข้อมูลจริงของชมรม — ห้าม overwrite ยกเว้นใส่ --i-know-what-im-doing
+  const PROTECTED_TABS = new Set(["activities", "highlights", "committee"]);
+  const DANGER_OVERRIDE = process.argv.includes("--i-know-what-im-doing");
 
   // flag --only=tab1,tab2 = ทำเฉพาะ tab ที่ระบุ (comma-separated)
   const onlyArg = process.argv.find((a) => a.startsWith("--only="));
@@ -234,18 +237,30 @@ async function main() {
     // skip ถ้ามี --only filter และ tab นี้ไม่ใช่
     if (ONLY && !ONLY.has(tabName)) continue;
     // ตรวจว่า tab มีข้อมูลอยู่แล้วไหม
-    if (!FORCE) {
-      const existing = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: tabName,
-      });
-      const existingRows = existing.data.values?.length ?? 0;
-      // มีข้อมูลจริง (มากกว่าแถว header) → skip
-      if (existingRows > 1) {
-        console.log(`⏭️  ข้าม "${tabName}" — มีข้อมูล ${existingRows - 1} แถวอยู่แล้ว`);
-        skipped++;
-        continue;
-      }
+    const existing = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: tabName,
+    });
+    const existingRows = existing.data.values?.length ?? 0;
+    const hasData = existingRows > 1;
+
+    // 🛡️ Protected tabs (activities/highlights/committee) — ห้าม overwrite แม้ --force
+    // เว้นแต่ใส่ --i-know-what-im-doing เพิ่มอีกครั้ง
+    if (hasData && PROTECTED_TABS.has(tabName) && !DANGER_OVERRIDE) {
+      console.log(
+        `🛡️  ข้าม "${tabName}" (protected — มีข้อมูลจริง ${existingRows - 1} แถว)`
+      );
+      console.log(
+        `    ⚠️ ถ้ายืนยันจะเขียนทับ ใช้: --only=${tabName} --force --i-know-what-im-doing`
+      );
+      skipped++;
+      continue;
+    }
+
+    if (!FORCE && hasData) {
+      console.log(`⏭️  ข้าม "${tabName}" — มีข้อมูล ${existingRows - 1} แถวอยู่แล้ว`);
+      skipped++;
+      continue;
     }
 
     console.log(`✏️  เขียน tab "${tabName}" (${rows.length - 1} แถวข้อมูล)`);
