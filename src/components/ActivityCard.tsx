@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import type { ActivityItem } from "@/lib/google-sheets";
-import { ActivityGallery } from "./ActivityGallery";
 
 const AUDIENCE = {
   all: { bg: "bg-brand-50", text: "text-navy" },
@@ -11,10 +10,12 @@ const AUDIENCE = {
 } as const;
 
 /**
- * ActivityCard — compact card ที่คลิกได้ + modal เด้ง detail เต็ม
- *  - Card mobile: horizontal (รูปซ้าย + text ขวา)
- *  - Card desktop: vertical
- *  - Click → modal: photo gallery + full description + metadata
+ * ActivityCard — compact card + modal พร้อม inline gallery
+ *   Card: photo + date + audience + title + location
+ *   Click → modal เด้ง:
+ *     - Big main image (ปรับ index ได้)
+ *     - Thumbnails strip (scroll แนวนอน)
+ *     - Description เต็ม + metadata
  */
 export function ActivityCard({
   act,
@@ -28,18 +29,30 @@ export function ActivityCard({
   };
 }) {
   const [open, setOpen] = useState(false);
+  const [imgIdx, setImgIdx] = useState(0);
   const aud = AUDIENCE[act.audience];
+  const total = act.images.length;
+  const currentImg = act.images[imgIdx];
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    setImgIdx(0);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+      if (e.key === "ArrowRight")
+        setImgIdx((i) => (total === 0 ? 0 : (i + 1) % total));
+      if (e.key === "ArrowLeft")
+        setImgIdx((i) => (total === 0 ? 0 : (i - 1 + total) % total));
+    };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [open]);
+  }, [open, total]);
+
+  const coverSrc = act.coverUrl || act.images[0] || "";
 
   return (
     <>
@@ -49,12 +62,11 @@ export function ActivityCard({
         onClick={() => setOpen(true)}
         className="group relative flex flex-row sm:flex-col border border-line bg-white text-start overflow-hidden transition-all duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-brand hover:shadow-soft hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
       >
-        {/* IMAGE */}
         <div className="relative flex-none w-[110px] aspect-square sm:w-full sm:aspect-[16/10]">
-          {act.images.length > 0 ? (
+          {coverSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={act.images[0]}
+              src={coverSrc}
               alt={act.title}
               referrerPolicy="no-referrer"
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
@@ -75,14 +87,13 @@ export function ActivityCard({
           >
             {labels.audienceLabel}
           </span>
-          {act.images.length > 1 && (
+          {total > 1 && (
             <span className="absolute top-2 end-2 sm:top-3 sm:end-3 z-[2] inline-flex items-center gap-1 bg-black/65 px-2 py-0.5 text-[10.5px] font-bold text-white backdrop-blur-sm">
-              📷 +{act.images.length - 1}
+              📷 {total}
             </span>
           )}
         </div>
 
-        {/* TEXT — card แสดงแค่ date + title + location (desc อยู่ใน modal) */}
         <div className="flex flex-1 flex-col p-3 sm:p-[18px] min-w-0">
           <time className="font-display text-[11.5px] sm:text-[12.5px] font-bold text-brand-600">
             {act.date}
@@ -98,33 +109,109 @@ export function ActivityCard({
         </div>
       </button>
 
-      {/* ═══════ MODAL ═══════ */}
+      {/* ═══════ MODAL — inline gallery ═══════ */}
       {open && (
         <div
           role="dialog"
           aria-modal="true"
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 sm:p-8 animate-in fade-in duration-300"
+          className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center bg-black/70 backdrop-blur-md p-4 sm:p-8 animate-in fade-in duration-300 overflow-y-auto"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[720px] max-h-[90vh] overflow-y-auto bg-white shadow-2xl animate-in modal-pop duration-400"
+            className="relative w-full max-w-[840px] bg-white shadow-2xl animate-in fade-in duration-300 my-auto"
           >
+            {/* Close */}
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label={labels.closeLabel}
-              className="absolute top-3 end-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-navy shadow-md transition-all duration-200 ease-out hover:bg-white hover:scale-110 hover:rotate-90"
+              className="absolute top-3 end-3 z-10 grid h-11 w-11 place-items-center rounded-full bg-white/95 text-navy shadow-md transition-all duration-200 ease-out hover:bg-white hover:scale-110 hover:rotate-90"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
             </button>
 
-            {/* Gallery (reuse existing component) */}
-            <div className="relative">
-              <ActivityGallery images={act.images} alt={act.title} emptyEmoji="🎉" />
-            </div>
+            {/* Big main image */}
+            {currentImg ? (
+              <div className="relative bg-black">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={currentImg}
+                  alt={act.title}
+                  referrerPolicy="no-referrer"
+                  className="block w-full max-h-[60vh] object-contain"
+                />
+                {/* Nav arrows */}
+                {total > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setImgIdx((i) => (i - 1 + total) % total)}
+                      aria-label="Previous"
+                      className="absolute start-3 top-1/2 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-white/85 text-navy shadow hover:bg-white hover:scale-110 transition-all duration-200"
+                    >
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15 18l-6-6 6-6" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImgIdx((i) => (i + 1) % total)}
+                      aria-label="Next"
+                      className="absolute end-3 top-1/2 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-white/85 text-navy shadow hover:bg-white hover:scale-110 transition-all duration-200"
+                    >
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </button>
+                    {/* Counter */}
+                    <div className="absolute bottom-3 start-1/2 -translate-x-1/2 rounded-full bg-black/70 backdrop-blur-sm text-white px-3 py-1 text-[12px] font-semibold">
+                      {imgIdx + 1} / {total}
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div
+                className="grid place-items-center h-48 text-[13px] text-ink-subtle"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(135deg,#E4ECF4 0 12px,#F1F6FB 12px 24px)",
+                }}
+              >
+                🎉 (no photos)
+              </div>
+            )}
+
+            {/* Thumbnails strip */}
+            {total > 1 && (
+              <div className="border-b border-line bg-canvas p-2">
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {act.images.map((img, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setImgIdx(i)}
+                      className={`flex-none aspect-square w-16 sm:w-20 overflow-hidden transition-all ${
+                        i === imgIdx
+                          ? "ring-2 ring-brand ring-offset-1"
+                          : "opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img}
+                        alt=""
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Body */}
             <div className="p-6 sm:p-8">
