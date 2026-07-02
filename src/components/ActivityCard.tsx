@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ActivityItem } from "@/lib/google-sheets";
 
 const AUDIENCE = {
@@ -10,12 +11,11 @@ const AUDIENCE = {
 } as const;
 
 /**
- * ActivityCard — compact card + modal พร้อม inline gallery
- *   Card: photo + date + audience + title + location
- *   Click → modal เด้ง:
- *     - Big main image (ปรับ index ได้)
- *     - Thumbnails strip (scroll แนวนอน)
- *     - Description เต็ม + metadata
+ * ActivityCard — card + modal + full-screen lightbox
+ *   Card: thumbnail + date + audience + title + location
+ *   Modal (click card): cover + description + "ดูประมวลรูปภาพ" button
+ *   Lightbox (click button): full-screen slideshow with prev/next
+ *     - ใช้ Portal render ที่ document.body (หลีกเลี่ยง transform bug)
  */
 export function ActivityCard({
   act,
@@ -29,20 +29,22 @@ export function ActivityCard({
   };
 }) {
   const [open, setOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const aud = AUDIENCE[act.audience];
   const total = act.images.length;
-  const currentImg = act.images[imgIdx];
+  const coverSrc = act.coverUrl || act.images[0] || "";
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Modal esc/scroll lock
+  useEffect(() => {
     if (!open) return;
-    setImgIdx(0);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-      if (e.key === "ArrowRight")
-        setImgIdx((i) => (total === 0 ? 0 : (i + 1) % total));
-      if (e.key === "ArrowLeft")
-        setImgIdx((i) => (total === 0 ? 0 : (i - 1 + total) % total));
+      if (e.key === "Escape" && !lightboxOpen) setOpen(false);
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -50,9 +52,22 @@ export function ActivityCard({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [open, total]);
+  }, [open, lightboxOpen]);
 
-  const coverSrc = act.coverUrl || act.images[0] || "";
+  // Lightbox esc/nav
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    setImgIdx(0);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+      if (e.key === "ArrowRight")
+        setImgIdx((i) => (total === 0 ? 0 : (i + 1) % total));
+      if (e.key === "ArrowLeft")
+        setImgIdx((i) => (total === 0 ? 0 : (i - 1 + total) % total));
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [lightboxOpen, total]);
 
   return (
     <>
@@ -109,7 +124,7 @@ export function ActivityCard({
         </div>
       </button>
 
-      {/* ═══════ MODAL — inline gallery ═══════ */}
+      {/* ═══════ MODAL ═══════ */}
       {open && (
         <div
           role="dialog"
@@ -119,7 +134,7 @@ export function ActivityCard({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[840px] bg-white shadow-2xl animate-in fade-in duration-300 my-auto"
+            className="relative w-full max-w-[720px] bg-white shadow-2xl my-auto"
           >
             {/* Close */}
             <button
@@ -133,83 +148,16 @@ export function ActivityCard({
               </svg>
             </button>
 
-            {/* Big main image */}
-            {currentImg ? (
+            {/* Cover image */}
+            {coverSrc && (
               <div className="relative bg-black">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={currentImg}
+                  src={coverSrc}
                   alt={act.title}
                   referrerPolicy="no-referrer"
-                  className="block w-full max-h-[60vh] object-contain"
+                  className="block w-full max-h-[50vh] object-contain"
                 />
-                {/* Nav arrows */}
-                {total > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setImgIdx((i) => (i - 1 + total) % total)}
-                      aria-label="Previous"
-                      className="absolute start-3 top-1/2 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-white/85 text-navy shadow hover:bg-white hover:scale-110 transition-all duration-200"
-                    >
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M15 18l-6-6 6-6" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setImgIdx((i) => (i + 1) % total)}
-                      aria-label="Next"
-                      className="absolute end-3 top-1/2 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-white/85 text-navy shadow hover:bg-white hover:scale-110 transition-all duration-200"
-                    >
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 18l6-6-6-6" />
-                      </svg>
-                    </button>
-                    {/* Counter */}
-                    <div className="absolute bottom-3 start-1/2 -translate-x-1/2 rounded-full bg-black/70 backdrop-blur-sm text-white px-3 py-1 text-[12px] font-semibold">
-                      {imgIdx + 1} / {total}
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div
-                className="grid place-items-center h-48 text-[13px] text-ink-subtle"
-                style={{
-                  backgroundImage:
-                    "repeating-linear-gradient(135deg,#E4ECF4 0 12px,#F1F6FB 12px 24px)",
-                }}
-              >
-                🎉 (no photos)
-              </div>
-            )}
-
-            {/* Thumbnails strip */}
-            {total > 1 && (
-              <div className="border-b border-line bg-canvas p-2">
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {act.images.map((img, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setImgIdx(i)}
-                      className={`flex-none aspect-square w-16 sm:w-20 overflow-hidden transition-all ${
-                        i === imgIdx
-                          ? "ring-2 ring-brand ring-offset-1"
-                          : "opacity-70 hover:opacity-100"
-                      }`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={img}
-                        alt=""
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
               </div>
             )}
 
@@ -236,6 +184,27 @@ export function ActivityCard({
                 </p>
               )}
 
+              {/* ─── ดูประมวลรูปภาพ button ─── */}
+              {total > 0 && (
+                <div className="mt-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImgIdx(0);
+                      setLightboxOpen(true);
+                    }}
+                    className="inline-flex items-center gap-2.5 bg-brand text-white px-6 py-3.5 text-[14px] font-bold shadow-cta hover:bg-brand-600 hover:scale-[1.02] transition-all duration-200"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="5" width="18" height="14" rx="2" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    {labels.viewPhotos}
+                    <span className="opacity-80 font-display">· {total}</span>
+                  </button>
+                </div>
+              )}
+
               {act.location && (
                 <div className="mt-6 border-t border-line pt-4">
                   <p className="text-[13px] text-ink-muted">
@@ -248,6 +217,87 @@ export function ActivityCard({
           </div>
         </div>
       )}
+
+      {/* ═══════ FULLSCREEN LIGHTBOX (Portal to body) ═══════ */}
+      {mounted &&
+        lightboxOpen &&
+        createPortal(
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setLightboxOpen(false)}
+            className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/95 p-4 animate-in fade-in duration-300"
+          >
+            {/* Close */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxOpen(false);
+              }}
+              aria-label={labels.closeLabel}
+              className="absolute top-4 end-4 z-10 grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white transition-all duration-200 hover:bg-white/20 hover:scale-110 hover:rotate-90"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+
+            {/* Counter */}
+            <div className="absolute top-6 start-1/2 -translate-x-1/2 rounded-full bg-white/10 px-4 py-1.5 text-[13px] font-semibold text-white">
+              {imgIdx + 1} / {total}
+            </div>
+
+            {/* Image */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex max-h-full max-w-full items-center justify-center"
+            >
+              {act.images[imgIdx] && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={act.images[imgIdx]}
+                  alt={`${act.title} ${imgIdx + 1}`}
+                  referrerPolicy="no-referrer"
+                  className="max-h-[85vh] max-w-[92vw] object-contain shadow-2xl"
+                />
+              )}
+            </div>
+
+            {/* Prev/Next */}
+            {total > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setImgIdx((i) => (i - 1 + total) % total);
+                  }}
+                  aria-label="Previous"
+                  className="absolute start-4 top-1/2 -translate-y-1/2 grid h-12 w-12 place-items-center rounded-full bg-white/10 text-white transition-all duration-200 hover:bg-white/20 hover:scale-110"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setImgIdx((i) => (i + 1) % total);
+                  }}
+                  aria-label="Next"
+                  className="absolute end-4 top-1/2 -translate-y-1/2 grid h-12 w-12 place-items-center rounded-full bg-white/10 text-white transition-all duration-200 hover:bg-white/20 hover:scale-110"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </>
+            )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }
