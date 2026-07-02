@@ -111,15 +111,28 @@ async function listDriveFolderImages(folderId: string): Promise<string[]> {
       fields: "files(id,name)",
       orderBy: "name",
       pageSize: 100,
+      // Support shared drives too
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true,
     });
     const files = res.data.files ?? [];
+    console.log(
+      `[drive] folder "${folderId}" → พบ ${files.length} รูป`,
+      files.slice(0, 3).map((f) => f.name)
+    );
+    // ใช้ thumbnail URL — เสถียรกว่า lh3 สำหรับไฟล์ที่ shared แบบ Anyone with link
     const urls = files
       .filter((f) => f.id)
-      .map((f) => `https://lh3.googleusercontent.com/d/${f.id}=w1600`);
+      .map(
+        (f) => `https://drive.google.com/thumbnail?id=${f.id}&sz=w1600`
+      );
     folderCache.set(folderId, urls);
     return urls;
   } catch (err) {
-    console.error(`[drive] อ่าน folder "${folderId}" ล้มเหลว:`, err);
+    console.error(
+      `[drive] อ่าน folder "${folderId}" ล้มเหลว:`,
+      err instanceof Error ? err.message : err
+    );
     return [];
   }
 }
@@ -164,15 +177,16 @@ export type SheetRow = Record<string, string>;
  *   - https://drive.google.com/uc?export=view&id=FILE_ID
  *   - https://drive.google.com/uc?id=FILE_ID
  *
- * → output: https://lh3.googleusercontent.com/d/FILE_ID=w1600
- *   (เสถียรกว่า /thumbnail — Google Photos CDN, ไม่ rate-limit)
- *   ใช้กับ <img referrerpolicy="no-referrer"> เพื่อกัน hotlink block
+ * → output: https://drive.google.com/thumbnail?id=FILE_ID&sz=w1600
+ *   (เสถียรที่สุดสำหรับไฟล์ที่ share แบบ Anyone with link)
  */
 function normalizeImageUrl(url: string): string {
   if (!url) return "";
+  // ถ้าเป็น folder URL → ไม่ normalize (return as-is → จะถูก expand ต่อ)
+  if (/\/folders\//.test(url)) return url;
   const match = url.match(/(?:\/d\/|[?&]id=)([a-zA-Z0-9_-]{20,})/);
   if (!match) return url;
-  return `https://lh3.googleusercontent.com/d/${match[1]}=w1600`;
+  return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600`;
 }
 
 function rowsToObjects(rows: string[][]): SheetRow[] {
