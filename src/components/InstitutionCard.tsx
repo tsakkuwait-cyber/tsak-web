@@ -63,13 +63,10 @@ export function InstitutionCard({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group relative flex flex-col overflow-hidden border border-line bg-white text-start transition-all duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-brand hover:shadow-soft hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        className="group relative flex flex-row sm:flex-col overflow-hidden border border-line bg-white text-start transition-all duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-brand hover:shadow-soft hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
       >
-        {/* Cover photo */}
-        <div
-          className="relative bg-gradient-to-br from-navy via-navy-dark to-brand-900"
-          style={{ aspectRatio: "16 / 9" }}
-        >
+        {/* Cover — mobile: square 120px | sm+: 16:9 full-width */}
+        <div className="relative flex-none w-[120px] aspect-square sm:w-full sm:aspect-[16/9] bg-gradient-to-br from-navy via-navy-dark to-brand-900">
           {inst.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -83,49 +80,49 @@ export function InstitutionCard({
               [ {inst.short} ]
             </div>
           )}
-          <span className="absolute top-3 start-3 inline-block bg-navy/85 backdrop-blur-sm px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase text-brand-200">
+          <span className="absolute top-2 start-2 sm:top-3 sm:start-3 inline-block bg-navy/85 backdrop-blur-sm px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px] font-bold tracking-wider uppercase text-brand-200">
             {inst.type}
           </span>
-          {/* View detail hint — slide up on hover */}
-          <span className="absolute bottom-3 end-3 inline-flex items-center gap-1 bg-white/95 px-2.5 py-1 text-[10.5px] font-bold text-navy shadow-md opacity-0 translate-y-1 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:translate-y-0">
+          {/* View detail hint — desktop only */}
+          <span className="hidden sm:inline-flex absolute bottom-3 end-3 items-center gap-1 bg-white/95 px-2.5 py-1 text-[10.5px] font-bold text-navy shadow-md opacity-0 translate-y-1 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:translate-y-0">
             {labels.detailLabel} →
           </span>
         </div>
 
-        <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
-          <div className="flex items-start gap-3">
+        <div className="flex flex-1 flex-col gap-2 sm:gap-3 p-3 sm:p-5 min-w-0">
+          <div className="flex items-start gap-2 sm:gap-3">
             {inst.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={inst.logoUrl}
                 alt=""
                 referrerPolicy="no-referrer"
-                className="h-11 w-11 flex-none object-contain"
+                className="hidden sm:block h-11 w-11 flex-none object-contain"
               />
             ) : (
-              <span className="grid h-11 w-11 flex-none place-items-center bg-brand-50 text-[11px] font-extrabold text-navy">
+              <span className="hidden sm:grid h-11 w-11 flex-none place-items-center bg-brand-50 text-[11px] font-extrabold text-navy">
                 {inst.short}
               </span>
             )}
             <div className="min-w-0 flex-1">
-              <h3 className="text-[15px] font-bold leading-tight text-navy line-clamp-2">
+              <h3 className="text-[13.5px] sm:text-[15px] font-bold leading-tight text-navy line-clamp-2">
                 {inst.name}
               </h3>
               {inst.area && (
-                <p className="mt-0.5 text-[12px] text-ink-muted">📍 {inst.area}</p>
+                <p className="mt-0.5 text-[11px] sm:text-[12px] text-ink-muted line-clamp-1">📍 {inst.area}</p>
               )}
             </div>
           </div>
 
-          <div className="flex items-baseline justify-between">
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-display text-[28px] font-extrabold text-brand leading-none">
+          <div className="mt-auto flex items-baseline justify-between gap-2">
+            <div className="flex items-baseline gap-1">
+              <span className="font-display text-[22px] sm:text-[28px] font-extrabold text-brand leading-none">
                 {inst.studentsCount}
               </span>
-              <span className="text-[12px] text-ink-muted">{labels.studentsLabel}</span>
+              <span className="text-[10.5px] sm:text-[12px] text-ink-muted">{labels.studentsLabel}</span>
             </div>
             {facultyItems.length > 0 && (
-              <span className="text-[11.5px] font-bold text-brand-600">
+              <span className="text-[10px] sm:text-[11.5px] font-bold text-brand-600 whitespace-nowrap">
                 {facultyItems.length} {labels.facultyTitle}
               </span>
             )}

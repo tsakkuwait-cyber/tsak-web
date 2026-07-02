@@ -11,7 +11,7 @@ import {
   type HighlightType,
 } from "@/lib/google-sheets";
 import { DonateButton } from "@/components/DonateButton";
-import { ActivityGallery } from "@/components/ActivityGallery";
+import { ActivityCard } from "@/components/ActivityCard";
 import { HighlightsGallery } from "@/components/HighlightsGallery";
 
 /**
@@ -79,7 +79,7 @@ export default async function HomePage({
   const ctaReasons = [d.ctaReason1, d.ctaReason2, d.ctaReason3].filter(Boolean);
 
   // Recent highlights (top 3)
-  // Group highlights by collection first, then take top N groups (album-friendly)
+  // Group highlights by collection → take top 3 groups → flatten (ไม่ตัด members ในกลุ่ม)
   const highlightGroupMap = new Map<string, typeof highlights>();
   for (const h of highlights) {
     const key = h.collection || `__solo_${h.id}`;
@@ -87,7 +87,7 @@ export default async function HomePage({
     highlightGroupMap.get(key)!.push(h);
   }
   const recentHighlights = Array.from(highlightGroupMap.values())
-    .slice(0, 4)
+    .slice(0, 3)
     .flat();
 
   const typeLabel = (t: HighlightType) => {
@@ -466,7 +466,7 @@ export default async function HomePage({
 
           {/* Reuse HighlightsGallery — book cover + reading modal (ไม่ต้องไปหน้าอื่น) */}
           <HighlightsGallery
-            highlights={recentHighlights.slice(0, 4)}
+            highlights={recentHighlights}
             typeLabels={{
               graduation: (dict.students as Record<string, string>).typeGraduation ?? "Graduation",
               scholarship: (dict.students as Record<string, string>).typeScholarship ?? "Scholarship",
@@ -553,31 +553,26 @@ export default async function HomePage({
                 {d.viewAll ?? "View all"} →
               </Link>
             </div>
-            <div
-              className="grid gap-6"
-              style={{
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              }}
-            >
-              {activities.slice(0, 3).map((act) => (
-                <article
-                  key={act.id}
-                  className="flex flex-col border border-line bg-white"
-                >
-                  <ActivityGallery images={act.images} alt={act.title} />
-                  <div className="flex flex-1 flex-col p-5">
-                    <time className="font-display text-[13px] font-bold text-brand-600">
-                      {act.date}
-                    </time>
-                    <h3 className="mt-2 text-[18px] font-bold leading-snug text-navy line-clamp-2">
-                      {act.title}
-                    </h3>
-                    <p className="mt-2 flex-1 text-[14px] leading-relaxed text-ink-soft line-clamp-3">
-                      {act.description}
-                    </p>
-                  </div>
-                </article>
-              ))}
+            {/* Grid: mobile 1 col (horizontal card compact) / tablet 2 / desktop 3 */}
+            <div className="grid gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {activities.slice(0, 3).map((act) => {
+                const audienceLabels: Record<string, string> = {
+                  all: (dict.activities as Record<string, string>).audienceAll ?? "ทุกคน",
+                  male: (dict.activities as Record<string, string>).audienceMale ?? "ชาย",
+                  female: (dict.activities as Record<string, string>).audienceFemale ?? "หญิง",
+                };
+                return (
+                  <ActivityCard
+                    key={act.id}
+                    act={act}
+                    labels={{
+                      audienceLabel: audienceLabels[act.audience] ?? "",
+                      viewPhotos: dict.activities.viewPhotos,
+                      closeLabel: "Close",
+                    }}
+                  />
+                );
+              })}
             </div>
           </div>
         </section>
