@@ -22,13 +22,13 @@
   },
   "home": {
     "kicker": "Welcome",
-    "title": "A Home for Thai Students in the State of Kuwait",
-    "lead": "The Thai Student Association in Kuwait is the home and connecting point for Thai students across the State of Kuwait. We support one another like family — in study, culture, and everyday life abroad.",
+    "title": "Your Home Away from Home",
+    "lead": "The Thai Student Association in Kuwait serves as a central hub and community network for Thai students. We are committed to supporting one another like a family.",
     "heroBadge": "Thai students across Kuwait",
     "aboutKicker": "About the Association",
     "aboutTitle": "We Care for Each Other Like One Family",
-    "aboutText": "The association was founded to bridge Thai students, the Embassy, and the Thai community in Kuwait. We organise events, offer guidance, and support our members when they need it most — so everyone can graduate and live happily while studying abroad.",
-    "pillarsTitle": "What We Do",
+    "aboutText": "Established as a vital liaison between Thai students, the Royal Thai Embassy, and the wider Thai community in Kuwait, our association facilitates cultural activities, provides academic guidance, and offers comprehensive support to our members.",
+    "pillarsTitle": "Our Activities",
     "ctaBandTitle": "Support Thai Students in Kuwait",
     "ctaBandText": "Your support helps the association host events and offer scholarships to its members. There is no obligation to donate — if you would like to support us, simply contact the association directly.",
     "ctaBandBtn": "Contact to Support",
@@ -42,7 +42,7 @@
     "viewAll": "View all"
   },
   "footer": {
-    "about": "Thai Student Association in the State of Kuwait — a home and support for Thai students abroad.",
+    "about": "The Thai Student Association in Kuwait: Fostering community, providing support, and creating a home for Thai students abroad.",
     "quick": "Quick Links",
     "contactT": "Contact",
     "follow": "Follow Us",
@@ -91,7 +91,7 @@
   "contact": {
     "kicker": "Contact",
     "title": "Contact Us",
-    "intro": "The association council and channels for contact and support.",
+    "intro": "Connect with our student council members or reach out to us for any support or inquiries.",
     "councilTitle": "The Council",
     "councilMainTitle": "Main Council",
     "councilFemaleTitle": "Female Council",

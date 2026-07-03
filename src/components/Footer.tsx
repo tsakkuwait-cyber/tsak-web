@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { ChannelItem } from "@/lib/google-sheets";
+import { ChannelIcon } from "./ChannelIcon";
 
 /**
  * Footer — dark navy 4 columns
@@ -126,8 +127,8 @@ export function Footer({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 hover:text-white transition-colors"
                   >
-                    <span className="grid h-6 w-6 place-items-center bg-white/10 text-[11px] font-bold text-brand-200">
-                      {ch.icon}
+                    <span className="grid h-6 w-6 place-items-center rounded-full border border-white/25 text-brand-200">
+                      <ChannelIcon channelKey={ch.key} size={12} strokeWidth={1.7} />
                     </span>
                     <span dir="auto" className="truncate">
                       {ch.value}
@@ -135,8 +136,8 @@ export function Footer({
                   </a>
                 ) : (
                   <span key={ch.key} className="inline-flex items-center gap-2">
-                    <span className="grid h-6 w-6 place-items-center bg-white/10 text-[11px] font-bold text-brand-200">
-                      {ch.icon}
+                    <span className="grid h-6 w-6 place-items-center rounded-full border border-white/25 text-brand-200">
+                      <ChannelIcon channelKey={ch.key} size={12} strokeWidth={1.7} />
                     </span>
                     <span dir="auto" className="truncate">
                       {ch.value}

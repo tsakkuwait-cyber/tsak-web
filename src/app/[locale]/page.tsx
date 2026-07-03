@@ -601,15 +601,15 @@ function pillars(locale: Locale): { title: string; desc: string }[] {
     en: [
       {
         title: "Welcoming New Students",
-        desc: "We help with settling in, housing, and enrollment for newly arrived students.",
+        desc: "We provide essential support for newly arrived students, including guidance on housing, university enrollment, and adjusting to life in Kuwait.",
       },
       {
         title: "Academic Support",
-        desc: "We share scholarship information, run study sessions, and connect students across every institution.",
+        desc: "We facilitate academic success by sharing scholarship opportunities, organizing study sessions, and fostering connections among students across all institutions.",
       },
       {
         title: "Preserving Thai Culture",
-        desc: "We host Thai festivals such as Songkran and Loy Krathong and share our culture with our Kuwaiti friends.",
+        desc: "We proudly promote Thai heritage by hosting traditional festivals, such as Songkran and Loy Krathong, fostering cultural exchange with our Kuwaiti friends.",
       },
     ],
     ar: [

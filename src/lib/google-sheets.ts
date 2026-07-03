@@ -279,16 +279,22 @@ export interface ActivityItem {
   audience: "all" | "male" | "female";
 }
 
-/** อ่านสถิติแล้ว pick label ตามภาษา */
+/** อ่านสถิติแล้ว pick label ตามภาษา
+ *  ภาษาอังกฤษ: capitalize ตัวแรกทุกคำ (แก้กรณี GOOGLETRANSLATE คืน lowercase เช่น "alumni")
+ */
 export async function getStats(locale: Locale): Promise<StatItem[]> {
   const rows = await getSheet("stats");
   return rows.map((r) => {
     const raw = (r.value ?? "").toString().trim();
+    let label = r[`label_${locale}`] ?? r.label_en ?? r.key;
+    if (locale === "en" && typeof label === "string") {
+      label = label.replace(/\b[a-z]/g, (c: string) => c.toUpperCase());
+    }
     return {
       key: r.key,
       value: Number(raw),
       display: raw || "—",
-      label: r[`label_${locale}`] ?? r.label_en ?? r.key,
+      label,
     };
   });
 }
@@ -321,6 +327,8 @@ export interface CouncilMember {
   year: string;
   /** ประเภทสภา: 'main' (รวม) | 'female' (สภาหญิงแยก) — default = 'main' */
   councilType: "main" | "female";
+  /** คณะ + มหาวิทยาลัย (เช่น "วิศวกรรมศาสตร์ · Kuwait University") */
+  faculty: string;
   /** ช่องทางติดต่อรายบุคคล (optional) */
   email: string;
   phone: string;
@@ -407,6 +415,7 @@ export async function getCouncil(locale: Locale): Promise<CouncilMember[]> {
         councilType,
         role: r[`role_${locale}`] ?? r.role_th ?? r.role_en ?? "",
         name: r[`name_${locale}`] ?? r.name_th ?? r.name_en ?? "",
+        faculty: r[`faculty_${locale}`] ?? r.faculty_th ?? r.faculty_en ?? "",
         avatarUrl: normalizeImageUrl(r.avatar_url ?? ""),
         email: r.email ?? "",
         phone: r.phone ?? "",

@@ -6,6 +6,7 @@ import {
   getChannels,
   type CouncilMember,
 } from "@/lib/google-sheets";
+import { ChannelIcon } from "@/components/ChannelIcon";
 
 /**
  * Contact — Council redesigned
@@ -35,10 +36,10 @@ function initialOf(name: string): string {
  * ──────────────────────────────────────────────────────────── */
 function MemberContacts({ m, dark = false }: { m: CouncilMember; dark?: boolean }) {
   const items = [
-    m.email && { icon: "✉", value: m.email, href: `mailto:${m.email}` },
-    m.phone && { icon: "☎", value: m.phone, href: `tel:${m.phone.replace(/\s/g, "")}`, dir: "ltr" as const },
-    m.line && { icon: "L", value: m.line, href: m.line.startsWith("http") ? m.line : undefined },
-  ].filter(Boolean) as Array<{ icon: string; value: string; href?: string; dir?: "ltr" }>;
+    m.email && { key: "email", value: m.email, href: `mailto:${m.email}` },
+    m.phone && { key: "phone", value: m.phone, href: `tel:${m.phone.replace(/\s/g, "")}`, dir: "ltr" as const },
+    m.line && { key: "line", value: m.line, href: m.line.startsWith("http") ? m.line : undefined },
+  ].filter(Boolean) as Array<{ key: string; value: string; href?: string; dir?: "ltr" }>;
 
   if (items.length === 0) return null;
 
@@ -49,11 +50,13 @@ function MemberContacts({ m, dark = false }: { m: CouncilMember; dark?: boolean 
           <span className="inline-flex items-center gap-2 text-[12.5px]" dir={it.dir}>
             <span
               className={[
-                "grid h-[18px] w-[18px] flex-none place-items-center text-[10px] font-bold",
-                dark ? "bg-white/15 text-brand-200" : "bg-brand-50 text-navy",
+                "grid h-[22px] w-[22px] flex-none place-items-center rounded-full border",
+                dark
+                  ? "border-white/25 text-brand-200"
+                  : "border-line text-navy",
               ].join(" ")}
             >
-              {it.icon}
+              <ChannelIcon channelKey={it.key} size={12} strokeWidth={1.7} />
             </span>
             <span className="truncate">{it.value}</span>
           </span>
@@ -142,6 +145,16 @@ function PhotoCard({
           >
             {m.name}
           </h3>
+          {m.faculty && (
+            <p
+              className={[
+                "mt-1 text-[11.5px] sm:text-[12px] leading-snug",
+                isPresident ? "text-[#BBDCD9]" : "text-ink-muted",
+              ].join(" ")}
+            >
+              {m.faculty}
+            </p>
+          )}
         </div>
         <div className="mt-auto">
           <MemberContacts m={m} dark={isPresident} />
@@ -195,6 +208,16 @@ function NameCard({
         >
           {m.name}
         </h3>
+        {m.faculty && (
+          <p
+            className={[
+              "mt-1 text-[12px] leading-snug",
+              isPresident ? "text-[#BBDCD9]" : "text-ink-muted",
+            ].join(" ")}
+          >
+            {m.faculty}
+          </p>
+        )}
       </div>
       <div className="mt-1">
         <MemberContacts m={m} dark={isPresident} />
@@ -348,8 +371,8 @@ export default async function ContactPage({
               {channels.map((ch, i, arr) => {
                 const inner = (
                   <>
-                    <span className="flex-none grid h-[38px] w-[38px] place-items-center bg-brand-50 text-[14px] font-extrabold text-navy">
-                      {ch.icon}
+                    <span className="flex-none grid h-[38px] w-[38px] place-items-center rounded-full border border-line text-navy">
+                      <ChannelIcon channelKey={ch.key} size={18} />
                     </span>
                     <span className="flex flex-col min-w-0">
                       <span className="text-[12px] font-semibold text-ink-subtle">
