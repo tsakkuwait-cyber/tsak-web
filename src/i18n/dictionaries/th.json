@@ -98,6 +98,9 @@
     "downloadLabel": "ดาวน์โหลด PDF",
     "openLabel": "เปิดดู",
     "pinnedLabel": "ปักหมุด",
+    "searchPlaceholder": "ค้นหาเอกสาร...",
+    "noMatch": "ไม่พบเอกสารที่ตรงกัน — ลองค้นด้วยคำอื่นหรือเปลี่ยนหมวด",
+    "clearLabel": "ล้างการค้นหา",
     "homeSectionTitle": "คลังเอกสาร",
     "homeSectionIntro": "รวมข้อมูลที่จำเป็นสำหรับนักศึกษาไทย",
     "viewAll": "ดูทั้งหมด"

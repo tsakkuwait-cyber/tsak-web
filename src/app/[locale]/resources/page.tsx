@@ -75,6 +75,9 @@ export default async function ResourcesPage({
               filterAll: r.filterAll,
               downloadLabel: r.downloadLabel,
               pinnedLabel: r.pinnedLabel,
+              searchPlaceholder: r.searchPlaceholder,
+              noMatch: r.noMatch,
+              clearLabel: r.clearLabel,
             }}
           />
         )}

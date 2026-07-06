@@ -98,6 +98,9 @@
     "downloadLabel": "Download PDF",
     "openLabel": "Open",
     "pinnedLabel": "Pinned",
+    "searchPlaceholder": "Search documents...",
+    "noMatch": "No documents match your search — try a different keyword or category",
+    "clearLabel": "Clear search",
     "homeSectionTitle": "Resources",
     "homeSectionIntro": "Essential information for Thai students in Kuwait",
     "viewAll": "View all"

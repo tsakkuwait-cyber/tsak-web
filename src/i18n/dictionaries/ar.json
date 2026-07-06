@@ -98,6 +98,9 @@
     "downloadLabel": "تحميل PDF",
     "openLabel": "فتح",
     "pinnedLabel": "مثبت",
+    "searchPlaceholder": "ابحث في المستندات...",
+    "noMatch": "لا توجد نتائج مطابقة — جرّب كلمة أخرى أو غيّر الفئة",
+    "clearLabel": "مسح البحث",
     "homeSectionTitle": "المصادر",
     "homeSectionIntro": "معلومات أساسية للطلبة التايلانديين في الكويت",
     "viewAll": "عرض الكل"
