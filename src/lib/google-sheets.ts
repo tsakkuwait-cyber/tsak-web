@@ -573,14 +573,31 @@ export async function getActivities(locale: Locale): Promise<ActivityItem[]> {
     filtered.map(async (r) => {
       // image_url = folder URL / comma-separated URLs (gallery)
       const galleryImages = await expandImageUrls(r.image_url || "");
-      // รองรับทั้ง key อังกฤษ (all/male/female) และ label ไทย (ทุกคน/ผู้ชาย/ผู้หญิง)
-      const audRaw = String(r.audience ?? "").trim().toLowerCase();
-      const audience: ActivityItem["audience"] =
-        audRaw === "male" || audRaw === "ผู้ชาย" || audRaw === "ชาย"
-          ? "male"
-          : audRaw === "female" || audRaw === "ผู้หญิง" || audRaw === "หญิง"
-          ? "female"
-          : "all";
+      // รองรับหลายรูปแบบ: อังกฤษ, ไทย, มีช่องว่าง, มี Zero-Width space
+      // ใช้ .includes() แทน === → ทนต่อคำแบบ "เฉพาะชาย" / "ผู้ชายเท่านั้น" ฯลฯ
+      const audRaw = String(r.audience ?? "")
+        .trim()
+        .replace(/[​-‍﻿]/g, "") // ตัด zero-width chars
+        .toLowerCase();
+      let audience: ActivityItem["audience"] = "all";
+      if (
+        audRaw.includes("male") && !audRaw.includes("female") ||
+        audRaw.includes("ชาย") && !audRaw.includes("หญิง") ||
+        audRaw.includes("boy") ||
+        audRaw.includes("men")
+      ) {
+        audience = "male";
+      } else if (
+        audRaw.includes("female") ||
+        audRaw.includes("หญิง") ||
+        audRaw.includes("girl") ||
+        audRaw.includes("women")
+      ) {
+        audience = "female";
+      }
+      if (audRaw && audience === "all" && !audRaw.includes("all") && !audRaw.includes("ทุก") && !audRaw.includes("every")) {
+        console.log(`[activity ${r.id}] audience="${r.audience}" ไม่ match → ใช้ default 'all'`);
+      }
 
       // cover_url = single file URL OR folder URL (smart handling)
       let coverUrl = "";
