@@ -12,6 +12,7 @@
     "home": "Home",
     "students": "Our Community",
     "activities": "Activities",
+    "resources": "Resources",
     "contact": "Contact"
   },
   "cta": {
@@ -87,6 +88,19 @@
     "audienceAll": "Everyone",
     "audienceMale": "Male only",
     "audienceFemale": "Female only"
+  },
+  "resources": {
+    "kicker": "Resources",
+    "title": "Documents & Essential Information",
+    "intro": "Scholarships, guides, forms, and important documents for Thai students in Kuwait.",
+    "filterAll": "All",
+    "noItems": "No documents yet",
+    "downloadLabel": "Download PDF",
+    "openLabel": "Open",
+    "pinnedLabel": "Pinned",
+    "homeSectionTitle": "Resources",
+    "homeSectionIntro": "Essential information for Thai students in Kuwait",
+    "viewAll": "View all"
   },
   "contact": {
     "kicker": "Contact",

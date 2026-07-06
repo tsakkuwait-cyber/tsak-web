@@ -81,17 +81,34 @@ const statsData = [
   ["scholarships", "15", "ทุนการศึกษา", tr("C", 9, "en"), tr("C", 9, "ar")],
 ];
 
-/** Tab: content — ข้อความบนเว็บที่แก้ได้ */
+/** Tab: content — ข้อความบนเว็บที่แก้ได้ (Home page all text + images) */
 const contentData = [
   ["key", "value_th", "value_en", "value_ar", "note"],
   ["hero_kicker", "ยินดีต้อนรับ", tr("B", 2, "en"), tr("B", 2, "ar"), "คำขึ้นต้น Hero"],
   ["hero_title", "บ้านของนักศึกษาไทย ในรัฐคูเวต", tr("B", 3, "en"), tr("B", 3, "ar"), "หัวข้อใหญ่ Hero"],
   ["hero_lead", "ชมรมนักศึกษาไทยในคูเวต เป็นศูนย์รวมและสื่อกลางของนักศึกษาไทยที่กำลังศึกษาในรัฐคูเวต เราดูแลกันเหมือนครอบครัว", tr("B", 4, "en"), tr("B", 4, "ar"), "คำบรรยาย Hero"],
-  ["about_title", "ดูแลกัน เหมือนครอบครัวเดียวกัน", tr("B", 5, "en"), tr("B", 5, "ar"), "Section 01 About"],
-  ["about_text", "ชมรมก่อตั้งขึ้นเพื่อเป็นสื่อกลางระหว่างนักศึกษาไทย สถานเอกอัครราชทูต และชุมชนไทยในคูเวต เราจัดกิจกรรม ให้คำปรึกษา และช่วยเหลือสมาชิกในยามจำเป็น", tr("B", 6, "en"), tr("B", 6, "ar"), "เนื้อหา Section 01"],
-  ["cta_band_title", "ร่วมสนับสนุนนักศึกษาไทยในคูเวต", tr("B", 7, "en"), tr("B", 7, "ar"), "CTA band title"],
-  ["cta_band_text", "การสนับสนุนของท่านช่วยให้ชมรมจัดกิจกรรมและมอบทุนการศึกษาแก่สมาชิก ชมรมไม่มีการบังคับบริจาค", tr("B", 8, "en"), tr("B", 8, "ar"), "CTA band text"],
-  ["est_year", "2011", "", "", "ปีก่อตั้งชมรม"],
+  ["hero_badge", "นักศึกษาไทยทั่วคูเวต", tr("B", 5, "en"), tr("B", 5, "ar"), "Badge เล็กใน Hero"],
+  ["about_kicker", "เกี่ยวกับชมรม", tr("B", 6, "en"), tr("B", 6, "ar"), "Section 01 kicker"],
+  ["about_title", "ดูแลสมาชิก เฉกเช่นครอบครัวเดียวกัน", tr("B", 7, "en"), tr("B", 7, "ar"), "Section 01 About"],
+  ["about_text", "ชมรมก่อตั้งขึ้นเพื่อเป็นสื่อกลางระหว่างนักศึกษาไทย สถานเอกอัครราชทูตไทยประจำรัฐคูเวต และชุมชนไทยในคูเวต ทางชมรมจัดกิจกรรม ให้คำปรึกษา และช่วยเหลือกันในยามจำเป็น", tr("B", 8, "en"), tr("B", 8, "ar"), "เนื้อหา Section 01"],
+  ["pillars_title", "กิจกรรมของชมรม", tr("B", 9, "en"), tr("B", 9, "ar"), "หัวข้อ Section 02"],
+  ["pillar_1_title", "ต้อนรับและดูแลน้องใหม่", tr("B", 10, "en"), tr("B", 10, "ar"), "Pillar 1 title"],
+  ["pillar_1_desc", "ช่วยเหลือการปรับตัว ที่พัก และการลงทะเบียนเรียน สำหรับนักศึกษาที่เพิ่งเดินทางมาถึง", tr("B", 11, "en"), tr("B", 11, "ar"), "Pillar 1 desc"],
+  ["pillar_2_title", "สนับสนุนด้านการเรียน", tr("B", 12, "en"), tr("B", 12, "ar"), "Pillar 2 title"],
+  ["pillar_2_desc", "แบ่งปันข้อมูลทุนการศึกษา ติว และเชื่อมโยงรุ่นพี่รุ่นน้องในแต่ละสถาบัน", tr("B", 13, "en"), tr("B", 13, "ar"), "Pillar 2 desc"],
+  ["pillar_3_title", "สืบสานวัฒนธรรมไทย", tr("B", 14, "en"), tr("B", 14, "ar"), "Pillar 3 title"],
+  ["pillar_3_desc", "จัดงานเทศกาลไทย สงกรานต์ ลอยกระทง และเผยแพร่วัฒนธรรมไทยแก่เพื่อนชาวคูเวต", tr("B", 15, "en"), tr("B", 15, "ar"), "Pillar 3 desc"],
+  ["cta_band_title", "ร่วมสนับสนุนนักศึกษาไทยในคูเวต", tr("B", 16, "en"), tr("B", 16, "ar"), "CTA band title"],
+  ["cta_band_text", "การสนับสนุนของท่านช่วยให้ชมรมจัดกิจกรรมและมอบทุนการศึกษาแก่สมาชิก ชมรมไม่มีการบังคับบริจาค", tr("B", 17, "en"), tr("B", 17, "ar"), "CTA band text"],
+  ["cta_band_btn", "ติดต่อเพื่อสนับสนุน", tr("B", 18, "en"), tr("B", 18, "ar"), "ปุ่ม CTA"],
+  ["cta_reason_1", "จัดกิจกรรมเพื่อสมาชิก", tr("B", 19, "en"), tr("B", 19, "ar"), "CTA เหตุผล 1"],
+  ["cta_reason_2", "ทุนการศึกษาสำหรับนักศึกษา", tr("B", 20, "en"), tr("B", 20, "ar"), "CTA เหตุผล 2"],
+  ["cta_reason_3", "รักษาวัฒนธรรมไทยในต่างแดน", tr("B", 21, "en"), tr("B", 21, "ar"), "CTA เหตุผล 3"],
+  ["stats_title", "สถิติชมรม", tr("B", 22, "en"), tr("B", 22, "ar"), "หัวข้อ stats"],
+  ["activities_title", "กิจกรรมล่าสุด", tr("B", 23, "en"), tr("B", 23, "ar"), "หัวข้อ Section 04"],
+  ["highlights_preview", "เรื่องราวล่าสุดจากสมาชิก", tr("B", 24, "en"), tr("B", 24, "ar"), "หัวข้อ Section 03"],
+  ["view_all", "ดูทั้งหมด", tr("B", 25, "en"), tr("B", 25, "ar"), "ปุ่มดูทั้งหมด (ใช้ทุก section)"],
+  ["est_year", "2011", "", "", "ปีก่อตั้งชมรม (ตัวเลข)"],
   ["hero_photo_url", "", "", "", "URL รูปกลุ่มสมาชิก (Google Drive) แสดงใน Hero หน้าแรก"],
   ["about_photo_url", "", "", "", "URL รูปประกอบ Section 01 About (ครอบครัวของเรา)"],
   ["pillar_1_photo_url", "", "", "", "รูปประกอบ Pillar 1 — ต้อนรับน้องใหม่"],
@@ -176,6 +193,17 @@ const highlightsData = [
   ["5", "2025", "graduation", "นายอันศอร มุสโตฟาดี", tr("D", 6, "en"), tr("D", 6, "ar"), "สถาบันอับดุลเราะห์มาน อัล-สุไมต์", tr("G", 6, "en"), tr("G", 6, "ar"), "อักษรศาสตร์ (อาหรับและวรรณกรรม)", tr("J", 6, "en"), tr("J", 6, "ar"), "จบการศึกษา ปีการศึกษา 2025", tr("M", 6, "en"), tr("M", 6, "ar"), "", "", "", "", "class-2025-sumait", "FALSE", "TRUE"],
 ];
 
+/** Tab: documents — คลังเอกสาร (ทุน / คู่มือ / แบบฟอร์ม)
+ *  💡 file_url = Drive share link (public "Anyone with link" viewer)
+ *  💡 pinned = TRUE → ตรึงบนสุด
+ */
+const documentsData = [
+  ["id", "category_th", "category_en", "category_ar", "title_th", "title_en", "title_ar", "desc_th", "desc_en", "desc_ar", "file_url", "cover_url", "date", "pinned", "published"],
+  ["1", "ทุนการศึกษา", tr("B", 2, "en"), tr("B", 2, "ar"), "ทุนรัฐบาลไทย 2026", tr("E", 2, "en"), tr("E", 2, "ar"), "รายละเอียดทุนรัฐบาลไทยสำหรับนักศึกษาไทยในต่างประเทศ ประจำปี 2026", tr("H", 2, "en"), tr("H", 2, "ar"), "", "", "2026-01-15", "TRUE", "TRUE"],
+  ["2", "คู่มือ", tr("B", 3, "en"), tr("B", 3, "ar"), "คู่มือนักเรียนใหม่ 2568", tr("E", 3, "en"), tr("E", 3, "ar"), "รวมข้อมูลที่นักเรียนใหม่ต้องรู้ก่อนเดินทางมาคูเวต — วีซ่า ที่พัก การเงิน ฯลฯ", tr("H", 3, "en"), tr("H", 3, "ar"), "", "", "2025-08-10", "TRUE", "TRUE"],
+  ["3", "แบบฟอร์ม", tr("B", 4, "en"), tr("B", 4, "ar"), "แบบฟอร์มขอวีซ่านักเรียน", tr("E", 4, "en"), tr("E", 4, "ar"), "แบบฟอร์มขอวีซ่านักเรียนสำหรับเดินทางเข้าประเทศคูเวต", tr("H", 4, "en"), tr("H", 4, "ar"), "", "", "2025-06-20", "FALSE", "TRUE"],
+];
+
 const TABS = {
   stats: statsData,
   content: contentData,
@@ -184,6 +212,7 @@ const TABS = {
   channels: channelsData,
   activities: activitiesData,
   highlights: highlightsData,
+  documents: documentsData,
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -194,7 +223,7 @@ async function main() {
   // flag --force = บังคับเขียนทับแม้มีข้อมูลอยู่แล้ว (ยกเว้น protected tabs)
   const FORCE = process.argv.includes("--force");
   // Tabs ที่มีข้อมูลจริงของชมรม — ห้าม overwrite ยกเว้นใส่ --i-know-what-im-doing
-  const PROTECTED_TABS = new Set(["activities", "highlights", "committee"]);
+  const PROTECTED_TABS = new Set(["activities", "highlights", "committee", "documents", "content"]);
   const DANGER_OVERRIDE = process.argv.includes("--i-know-what-im-doing");
 
   // flag --only=tab1,tab2 = ทำเฉพาะ tab ที่ระบุ (comma-separated)

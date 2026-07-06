@@ -12,6 +12,7 @@
     "home": "หน้าแรก",
     "students": "ชุมชนของเรา",
     "activities": "กิจกรรม",
+    "resources": "คลังเอกสาร",
     "contact": "ติดต่อเรา"
   },
   "cta": {
@@ -87,6 +88,19 @@
     "audienceAll": "ทุกคน",
     "audienceMale": "เฉพาะชาย",
     "audienceFemale": "เฉพาะหญิง"
+  },
+  "resources": {
+    "kicker": "คลังเอกสาร",
+    "title": "เอกสารและข้อมูลสำคัญ",
+    "intro": "รวมเอกสาร ทุนการศึกษา คู่มือ และแบบฟอร์มต่างๆ สำหรับนักศึกษาไทยในคูเวต",
+    "filterAll": "ทั้งหมด",
+    "noItems": "ยังไม่มีเอกสารในระบบ",
+    "downloadLabel": "ดาวน์โหลด PDF",
+    "openLabel": "เปิดดู",
+    "pinnedLabel": "ปักหมุด",
+    "homeSectionTitle": "คลังเอกสาร",
+    "homeSectionIntro": "รวมข้อมูลที่จำเป็นสำหรับนักศึกษาไทย",
+    "viewAll": "ดูทั้งหมด"
   },
   "contact": {
     "kicker": "ติดต่อ",

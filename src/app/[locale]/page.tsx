@@ -8,11 +8,13 @@ import {
   getHighlights,
   getContent,
   getChannels,
+  getDocuments,
   type HighlightType,
 } from "@/lib/google-sheets";
 import { DonateButton } from "@/components/DonateButton";
 import { ActivityCard } from "@/components/ActivityCard";
 import { HighlightsGallery } from "@/components/HighlightsGallery";
+import { DocumentCard } from "@/components/DocumentCard";
 
 /**
  * Home — engaging editorial layout
@@ -46,14 +48,16 @@ export default async function HomePage({
   if (!isLocale(params.locale)) notFound();
   const locale: Locale = params.locale;
 
-  const [dict, stats, activities, highlights, content, channels] = await Promise.all([
+  const [dict, stats, activities, highlights, content, channels, documents] = await Promise.all([
     getDictionary(locale),
     getStats(locale),
     getActivities(locale),
     getHighlights(locale),
     getContent(locale),
     getChannels(locale),
+    getDocuments(locale),
   ]);
+  const homeDocuments = documents.slice(0, 3);
   // CTA email — จาก channels sheet
   const supportEmail =
     channels.find((c) => c.key === "email")?.value ?? "info@thaikuwait.org";
@@ -74,9 +78,13 @@ export default async function HomePage({
   // Hero photo from content sheet (fallback = null)
   const heroPhotoUrl = content["hero_photo_url"] ?? "";
 
-  // CTA reasons
+  // CTA reasons — sheet ชนะ; fallback ไป dict
   const d = dict.home as Record<string, string>;
-  const ctaReasons = [d.ctaReason1, d.ctaReason2, d.ctaReason3].filter(Boolean);
+  const ctaReasons = [
+    t("cta_reason_1", d.ctaReason1),
+    t("cta_reason_2", d.ctaReason2),
+    t("cta_reason_3", d.ctaReason3),
+  ].filter(Boolean);
 
   // Recent highlights (top 3)
   // Group highlights by collection → take top 3 groups → flatten (ไม่ตัด members ในกลุ่ม)
@@ -235,7 +243,7 @@ export default async function HomePage({
                 {/* info card floating — ล่างซ้าย */}
                 <div className="hidden sm:block absolute -bottom-5 start-5 bg-white text-navy px-4 py-3 shadow-xl">
                   <div className="text-[10.5px] font-bold tracking-wider uppercase text-brand-600">
-                    {dict.home.heroBadge}
+                    {t("hero_badge", dict.home.heroBadge)}
                   </div>
                   <div className="font-display text-[22px] font-extrabold text-brand leading-none mt-1">
                     {statByKey["members"]?.display ?? "58"}+
@@ -364,7 +372,7 @@ export default async function HomePage({
             <div className="flex-none w-[180px] min-w-[160px]">
               <div className="font-display text-[15px] font-extrabold text-brand">01</div>
               <div className="mt-2 text-[13px] font-bold tracking-[0.12em] uppercase text-brand-600">
-                {dict.home.aboutKicker}
+                {t("about_kicker", dict.home.aboutKicker)}
               </div>
               <div className="mt-[14px] h-[2px] w-10 bg-brand" />
               <div className="mt-8 hidden sm:block">
@@ -391,14 +399,14 @@ export default async function HomePage({
           <div className="mb-8 flex items-center gap-4">
             <span className="font-display text-[15px] font-extrabold text-brand">02</span>
             <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
-              {dict.home.pillarsTitle}
+              {t("pillars_title", dict.home.pillarsTitle)}
             </span>
             <span className="flex-1 h-px bg-line" />
           </div>
 
           {/* Photo cards — clean grid, ไม่เอียง */}
           <div className="grid gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-y-4">
-            {pillars(locale).map((p, idx) => {
+            {pillars(locale, content).map((p, idx) => {
               const photoUrl = content[`pillar_${idx + 1}_photo_url`];
               return (
                 <div key={p.title} className="group">
@@ -453,14 +461,14 @@ export default async function HomePage({
           <div className="mb-8 flex items-center gap-4">
             <span className="font-display text-[15px] font-extrabold text-brand">03</span>
             <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
-              {d.highlightsPreview ?? "Recent Stories"}
+              {t("highlights_preview", d.highlightsPreview ?? "Recent Stories")}
             </span>
             <span className="flex-1 h-px bg-line" />
             <Link
               href={`/${locale}/students`}
               className="text-[13.5px] font-bold text-brand hover:text-brand-600 whitespace-nowrap"
             >
-              {d.viewAll ?? "View all"} →
+              {t("view_all", d.viewAll ?? "View all")} →
             </Link>
           </div>
 
@@ -512,7 +520,7 @@ export default async function HomePage({
               href={supportEmailHref}
               className="flex-none inline-flex items-center justify-center rounded-sm bg-brand px-[34px] py-4 text-[15px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.22)] hover:bg-brand-600 transition-colors whitespace-nowrap"
             >
-              {dict.home.ctaBandBtn}
+              {t("cta_band_btn", dict.home.ctaBandBtn)}
             </a>
           </div>
 
@@ -543,14 +551,14 @@ export default async function HomePage({
             <div className="mb-8 flex items-center gap-4">
               <span className="font-display text-[15px] font-extrabold text-brand">04</span>
               <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
-                {dict.home.activitiesTitle}
+                {t("activities_title", dict.home.activitiesTitle)}
               </span>
               <span className="flex-1 h-px bg-line" />
               <Link
                 href={`/${locale}/activities`}
                 className="text-[13.5px] font-bold text-brand hover:text-brand-600 whitespace-nowrap"
               >
-                {d.viewAll ?? "View all"} →
+                {t("view_all", d.viewAll ?? "View all")} →
               </Link>
             </div>
             {/* Grid: mobile 1 col (horizontal card compact) / tablet 2 / desktop 3 */}
@@ -577,12 +585,51 @@ export default async function HomePage({
           </div>
         </section>
       )}
+
+      {/* ════════════════ 05 · RESOURCES PREVIEW ════════════════ */}
+      {homeDocuments.length > 0 && (
+        <section className="border-t border-line bg-canvas">
+          <div className="container py-[clamp(48px,7vw,84px)]">
+            <div className="mb-8 flex items-center gap-4">
+              <span className="font-display text-[15px] font-extrabold text-brand">05</span>
+              <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
+                {(dict.resources as Record<string, string>).homeSectionTitle}
+              </span>
+              <span className="flex-1 h-px bg-line" />
+              <Link
+                href={`/${locale}/resources`}
+                className="text-[13.5px] font-bold text-brand hover:text-brand-600 whitespace-nowrap"
+              >
+                {(dict.resources as Record<string, string>).viewAll} →
+              </Link>
+            </div>
+            <p className="mb-8 max-w-[62ch] text-[14.5px] leading-[1.8] text-ink-soft">
+              {(dict.resources as Record<string, string>).homeSectionIntro}
+            </p>
+            <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {homeDocuments.map((doc) => (
+                <DocumentCard
+                  key={doc.id}
+                  doc={doc}
+                  labels={{
+                    downloadLabel: (dict.resources as Record<string, string>).downloadLabel,
+                    pinnedLabel: (dict.resources as Record<string, string>).pinnedLabel,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }
 
-/* ------ Pillars (hardcoded) ------ */
-function pillars(locale: Locale): { title: string; desc: string }[] {
+/* ------ Pillars: sheet (content) wins over hardcoded fallback ------ */
+function pillars(
+  locale: Locale,
+  content: Record<string, string> = {}
+): { title: string; desc: string }[] {
   const data = {
     th: [
       {
@@ -627,5 +674,9 @@ function pillars(locale: Locale): { title: string; desc: string }[] {
       },
     ],
   };
-  return data[locale];
+  // Sheet override — ถ้ามี pillar_N_title/desc ในชีทให้ใช้แทน
+  return data[locale].map((p, idx) => ({
+    title: content[`pillar_${idx + 1}_title`] || p.title,
+    desc: content[`pillar_${idx + 1}_desc`] || p.desc,
+  }));
 }

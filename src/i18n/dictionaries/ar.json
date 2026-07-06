@@ -12,6 +12,7 @@
     "home": "الرئيسية",
     "students": "مجتمعنا",
     "activities": "الأنشطة",
+    "resources": "المصادر",
     "contact": "اتصل بنا"
   },
   "cta": {
@@ -87,6 +88,19 @@
     "audienceAll": "للجميع",
     "audienceMale": "للذكور فقط",
     "audienceFemale": "للإناث فقط"
+  },
+  "resources": {
+    "kicker": "المصادر",
+    "title": "المستندات والمعلومات المهمة",
+    "intro": "المنح الدراسية والأدلة والنماذج والمستندات المهمة للطلبة التايلانديين في الكويت.",
+    "filterAll": "الكل",
+    "noItems": "لا توجد مستندات بعد",
+    "downloadLabel": "تحميل PDF",
+    "openLabel": "فتح",
+    "pinnedLabel": "مثبت",
+    "homeSectionTitle": "المصادر",
+    "homeSectionIntro": "معلومات أساسية للطلبة التايلانديين في الكويت",
+    "viewAll": "عرض الكل"
   },
   "contact": {
     "kicker": "تواصل",

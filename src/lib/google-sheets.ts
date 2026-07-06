@@ -359,6 +359,22 @@ export interface HighlightItem {
   isCover: boolean;
 }
 
+export interface DocumentItem {
+  id: string;
+  /** category — เช่น "ทุนการศึกษา" / "คู่มือ" / "แบบฟอร์ม" */
+  category: string;
+  title: string;
+  description: string;
+  /** URL ไฟล์ PDF ใน Drive (public share link) — จะแปลงเป็น direct-download อัตโนมัติ */
+  fileUrl: string;
+  /** URL รูปหน้าปก (optional — ถ้าไม่มี จะแสดง PDF icon) */
+  coverUrl: string;
+  /** วันที่ในรูปแบบ YYYY-MM-DD (สำหรับเรียง) */
+  date: string;
+  /** TRUE = ตรึงบนสุด (แสดงก่อน items อื่น) */
+  pinned: boolean;
+}
+
 export interface ChannelItem {
   key: string;
   /** อีโมจิ/ตัวอักษรย่อ ใช้แสดงในไอคอนกล่อง */
@@ -488,6 +504,43 @@ export async function getHighlights(locale: Locale): Promise<HighlightItem[]> {
       };
     })
     .sort((a, b) => (a.year < b.year ? 1 : -1));
+}
+
+/**
+ * อ่านคลังเอกสาร (tab "documents")
+ * Schema:
+ *   id | category_th/en/ar | title_th/en/ar | desc_th/en/ar | file_url | cover_url | date | pinned | published
+ *
+ * file_url = Drive link — จะแปลงเป็น `uc?export=download&id=<ID>` ให้ดาวน์โหลดตรง
+ * cover_url = optional; ถ้าไม่มี UI จะแสดง PDF icon
+ */
+export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
+  const rows = await getSheet("documents");
+  return rows
+    .filter((r) => (r.published ?? "TRUE").toUpperCase() !== "FALSE")
+    .map((r) => {
+      // แปลง Drive share URL → direct download URL
+      let fileUrl = (r.file_url ?? "").trim();
+      const fileId = fileUrl.match(/\/d\/([^/]+)/)?.[1] || fileUrl.match(/[?&]id=([^&]+)/)?.[1];
+      if (fileId) {
+        fileUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+      }
+      return {
+        id: r.id,
+        category: r[`category_${locale}`] ?? r.category_th ?? r.category_en ?? r.category ?? "",
+        title: r[`title_${locale}`] ?? r.title_th ?? r.title_en ?? "",
+        description: r[`desc_${locale}`] ?? r.desc_th ?? r.desc_en ?? "",
+        fileUrl,
+        coverUrl: normalizeImageUrl(r.cover_url ?? ""),
+        date: r.date ?? "",
+        pinned: (r.pinned ?? "").toUpperCase() === "TRUE",
+      };
+    })
+    .sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return a.date < b.date ? 1 : -1;
+    });
 }
 
 /**

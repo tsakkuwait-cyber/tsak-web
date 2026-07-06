@@ -23,6 +23,7 @@ export function Footer({
     { href: `/${locale}`, label: dict.nav.home },
     { href: `/${locale}/students`, label: dict.nav.students },
     { href: `/${locale}/activities`, label: dict.nav.activities },
+    { href: `/${locale}/resources`, label: dict.nav.resources },
     { href: `/${locale}/contact`, label: dict.nav.contact },
   ];
 
