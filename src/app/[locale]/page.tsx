@@ -58,10 +58,6 @@ export default async function HomePage({
     getDocuments(locale),
   ]);
   const homeDocuments = documents.slice(0, 3);
-  // CTA email — จาก channels sheet
-  const supportEmail =
-    channels.find((c) => c.key === "email")?.value ?? "info@thaikuwait.org";
-  const supportEmailHref = `mailto:${supportEmail}?subject=Support%20TSAK`;
 
   const t = (key: string, fallback: string) => content[key] ?? fallback;
   const estYear = Number(content["est_year"]) || 2011;
@@ -78,13 +74,7 @@ export default async function HomePage({
   // Hero photo from content sheet (fallback = null)
   const heroPhotoUrl = content["hero_photo_url"] ?? "";
 
-  // CTA reasons — sheet ชนะ; fallback ไป dict
   const d = dict.home as Record<string, string>;
-  const ctaReasons = [
-    t("cta_reason_1", d.ctaReason1),
-    t("cta_reason_2", d.ctaReason2),
-    t("cta_reason_3", d.ctaReason3),
-  ].filter(Boolean);
 
   // Recent highlights (top 3)
   // Group highlights by collection → take top 3 groups → flatten (ไม่ตัด members ในกลุ่ม)
@@ -393,10 +383,10 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* ════════════════ SECTION 02 — PILLARS (cards with photos) ════════════════ */}
+      {/* ════════════════ SECTION 02 — พันธกิจ (minimal editorial) ════════════════ */}
       <section className="bg-white border-y border-line">
-        <div className="container py-[clamp(48px,7vw,84px)]">
-          <div className="mb-8 flex items-center gap-4">
+        <div className="container py-[clamp(64px,9vw,112px)]">
+          <div className="mb-[clamp(40px,6vw,72px)] flex items-center gap-4">
             <span className="font-display text-[15px] font-extrabold text-brand">02</span>
             <span className="text-[13px] font-bold tracking-[0.14em] uppercase text-brand-600">
               {t("pillars_title", dict.home.pillarsTitle)}
@@ -404,53 +394,29 @@ export default async function HomePage({
             <span className="flex-1 h-px bg-line" />
           </div>
 
-          {/* Photo cards — clean grid, ไม่เอียง */}
-          <div className="grid gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-y-4">
-            {pillars(locale, content).map((p, idx) => {
-              const photoUrl = content[`pillar_${idx + 1}_photo_url`];
-              return (
-                <div key={p.title} className="group">
-                  {/* Photo card */}
-                  <div
-                    className="relative overflow-hidden shadow-[0_12px_32px_rgba(0,0,0,0.12)] bg-navy transition-all duration-[500ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02] group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)]"
-                    style={{ aspectRatio: "1 / 1" }}
-                  >
-                    {photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={photoUrl}
-                        alt={p.title}
-                        referrerPolicy="no-referrer"
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-brand-50 to-brand-100">
-                        <span
-                          className="font-display text-[clamp(80px,14vw,140px)] font-extrabold text-brand-600/25 leading-none"
-                          aria-hidden
-                        >
-                          {String(idx + 1).padStart(2, "0")}
-                        </span>
-                      </div>
-                    )}
-                    {/* Number chip overlay */}
-                    <span className="absolute top-3 start-3 inline-block bg-white/95 backdrop-blur-sm px-2.5 py-1 font-display text-[11px] font-extrabold text-navy shadow-sm">
-                      {String(idx + 1).padStart(2, "0")}
-                    </span>
-                  </div>
-
-                  {/* Text below */}
-                  <div className="mt-5 sm:mt-6 px-2">
-                    <h3 className="m-0 text-[clamp(17px,1.7vw,20px)] font-bold leading-tight text-navy">
-                      {p.title}
-                    </h3>
-                    <p className="mt-2 m-0 text-[14px] sm:text-[14.5px] leading-[1.75] text-ink-muted">
-                      {p.desc}
-                    </p>
-                  </div>
+          {/* Minimal rows — big serif numbers + title + desc | ไม่มีรูป */}
+          <div className="grid gap-y-[clamp(36px,5vw,56px)] max-w-[68ch] mx-auto">
+            {pillars(locale, content).map((p, idx) => (
+              <article
+                key={p.title}
+                className="grid grid-cols-[auto_1fr] gap-x-6 sm:gap-x-10 items-baseline"
+              >
+                <span
+                  className="font-display text-[clamp(40px,6vw,64px)] font-extrabold leading-none text-brand-100 tabular-nums"
+                  aria-hidden
+                >
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h3 className="m-0 text-[clamp(18px,2vw,22px)] font-extrabold leading-tight text-navy">
+                    {p.title}
+                  </h3>
+                  <p className="mt-2.5 m-0 text-[clamp(14.5px,1.4vw,16px)] leading-[1.85] text-ink-soft">
+                    {p.desc}
+                  </p>
                 </div>
-              );
-            })}
+              </article>
+            ))}
           </div>
         </div>
       </section>
@@ -488,59 +454,27 @@ export default async function HomePage({
         </section>
       )}
 
-      {/* ════════════════ CTA BAND — with reasons ════════════════ */}
+      {/* ════════════════ CTA BAND — minimal (title + btn → contact) ════════════════ */}
       <section className="relative bg-navy text-white overflow-hidden">
-        {/* Soft orbs — elegant, not tech */}
         <div
           className="absolute -top-32 -end-32 w-[420px] h-[420px] rounded-full pointer-events-none"
           style={{
             background:
-              "radial-gradient(closest-side, rgba(16,150,141,0.25), transparent)",
+              "radial-gradient(closest-side, rgba(16,150,141,0.22), transparent)",
           }}
         />
-        <div
-          className="absolute -bottom-32 -start-32 w-[380px] h-[380px] rounded-full pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(closest-side, rgba(127,216,207,0.12), transparent)",
-          }}
-        />
-        <div className="container relative py-[clamp(52px,8vw,88px)]">
-          <div className="mb-5 h-[2px] w-10 bg-brand" />
-          <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
-            <div className="flex-1 basis-[420px] min-w-[300px]">
-              <h2 className="m-0 max-w-[22ch] text-[clamp(24px,3vw,36px)] font-extrabold leading-[1.25]">
-                {t("cta_band_title", dict.home.ctaBandTitle)}
-              </h2>
-              <p className="mt-4 max-w-[60ch] text-[16px] leading-[1.8] text-[#BBDCD9]">
-                {t("cta_band_text", dict.home.ctaBandText)}
-              </p>
-            </div>
-            <a
-              href={supportEmailHref}
-              className="flex-none inline-flex items-center justify-center rounded-sm bg-brand px-[34px] py-4 text-[15px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.22)] hover:bg-brand-600 transition-colors whitespace-nowrap"
+        <div className="container relative py-[clamp(40px,6vw,64px)]">
+          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-5">
+            <h2 className="m-0 max-w-[26ch] text-[clamp(20px,2.4vw,28px)] font-extrabold leading-[1.3]">
+              {t("cta_band_title", dict.home.ctaBandTitle)}
+            </h2>
+            <Link
+              href={`/${locale}/contact`}
+              className="flex-none inline-flex items-center justify-center rounded-sm bg-brand px-7 py-3.5 text-[14.5px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.22)] hover:bg-brand-600 transition-colors whitespace-nowrap"
             >
-              {t("cta_band_btn", dict.home.ctaBandBtn)}
-            </a>
+              {t("cta_band_btn", dict.home.ctaBandBtn)} →
+            </Link>
           </div>
-
-          {/* Reasons — 3 columns */}
-          {ctaReasons.length > 0 && (
-            <div className="grid gap-4 sm:grid-cols-3 border-t border-white/10 pt-8">
-              {ctaReasons.map((r, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <span className="font-display text-[22px] font-extrabold text-brand-200 leading-none">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div className="flex-1">
-                    <div className="text-[15px] font-semibold text-white leading-snug">
-                      {r}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
