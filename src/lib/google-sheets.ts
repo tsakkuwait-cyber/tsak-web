@@ -567,13 +567,9 @@ export async function getHighlights(locale: Locale): Promise<HighlightItem[]> {
  */
 export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
   const rows = await getSheet("documents");
-  const published = rows.filter(
-    (r) => (r.published ?? "TRUE").toUpperCase() !== "FALSE"
-  );
-
-  // ประมวลผลแบบ parallel — แต่ละ doc อาจ query Drive API เพื่อดึง thumbnail
-  const items = await Promise.all(
-    published.map(async (r) => {
+  return rows
+    .filter((r) => (r.published ?? "TRUE").toUpperCase() !== "FALSE")
+    .map((r) => {
       const rawUrl = (r.file_url ?? "").trim();
       const fileId =
         rawUrl.match(/\/d\/([^/]+)/)?.[1] ||
@@ -584,17 +580,18 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
         : rawUrl;
 
       // cover_url logic:
-      //   1. sheet มี cover_url → ใช้ lh3 direct (จาก user upload JPG/PNG)
-      //   2. sheet ว่าง + มี fileId → ดึง thumbnailLink จาก Drive API (auto PDF cover!)
-      //   3. ทั้ง 2 ว่าง → PDFIcon
+      //   1. sheet มี cover_url → ใช้ lh3 direct (JPG/PNG upload เอง)
+      //   2. sheet ว่าง + มี fileId → ลอง lh3 /d/{fileId} (works ถ้า thumbnail ready)
+      //   3. ล่ม → onError → PDFIcon
       const rawCover = (r.cover_url ?? "").trim();
-      let coverUrl = "";
-      if (rawCover) {
-        coverUrl = toDirectImageUrl(rawCover, 800);
-      } else if (fileId) {
-        // Drive API auto-generate thumbnail สำหรับทุก PDF · Doc · Sheet ฯลฯ
-        coverUrl = await getFileThumbnail(fileId);
-      }
+      const coverUrl = rawCover
+        ? toDirectImageUrl(rawCover, 800)
+        : fileId
+        ? `https://lh3.googleusercontent.com/d/${fileId}=w800`
+        : "";
+      console.log(
+        `[doc ${r.id}] file=${fileId ? fileId.slice(0, 8) + "..." : "—"} cover=${coverUrl ? "✓ " + coverUrl.slice(0, 60) : "PDFIcon"}`
+      );
 
       return {
         id: r.id,
@@ -608,13 +605,11 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
         pinned: (r.pinned ?? "").toUpperCase() === "TRUE",
       };
     })
-  );
-
-  return items.sort((a, b) => {
-    if (a.pinned && !b.pinned) return -1;
-    if (!a.pinned && b.pinned) return 1;
-    return a.date < b.date ? 1 : -1;
-  });
+    .sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return a.date < b.date ? 1 : -1;
+    });
 }
 
 /**
