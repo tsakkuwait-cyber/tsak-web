@@ -1,3 +1,5 @@
+"use client";
+
 import type { DocumentItem } from "@/lib/google-sheets";
 import { DocumentPreview } from "./DocumentPreview";
 
