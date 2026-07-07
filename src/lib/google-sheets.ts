@@ -531,14 +531,13 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
         ? `https://drive.google.com/uc?export=download&id=${fileId}`
         : rawUrl;
 
-      // cover_url จากชีท → ถ้าไม่มี fallback ไป Drive PDF thumbnail (หน้าแรก)
-      // ใช้ API proxy `/api/drive-image` — server-side fetch แล้ว serve จาก domain เรา
-      // → แก้ปัญหา Safari iOS block รูปจาก Drive ตรงๆ
+      // cover_url จากชีท → ถ้าไม่มี ใช้ Drive PDF thumbnail (หน้าแรก)
+      // Desktop โหลด lh3 ได้; mobile บางเครื่องล่ม → onError fallback → PDFIcon
       const rawCover = (r.cover_url ?? "").trim();
       const coverUrl = rawCover
         ? normalizeImageUrl(rawCover)
         : fileId
-        ? `/api/drive-image?id=${fileId}&sz=w800`
+        ? `https://lh3.googleusercontent.com/d/${fileId}=w800`
         : "";
 
       return {
