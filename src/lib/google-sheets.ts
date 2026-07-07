@@ -545,13 +545,13 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
         ? `https://drive.google.com/uc?export=download&id=${fileId}`
         : rawUrl;
 
-      // cover_url จากชีท → ใช้ lh3 direct URL (ข้าม redirect · ทำงาน mobile Safari)
-      // ถ้าว่างและมี file PDF → auto-thumbnail จาก fileId
+      // cover_url จากชีท → ใช้ drive.google.com/thumbnail (แบบเดียวกับ Activities ที่ทำงานได้)
+      // Activities ใช้ URL นี้แล้ว mobile Safari โหลดได้ → มั่นใจว่า format นี้ใช้ได้
       const rawCover = (r.cover_url ?? "").trim();
       const coverUrl = rawCover
-        ? toDirectImageUrl(rawCover, 800)
+        ? normalizeImageUrl(rawCover)
         : fileId
-        ? `https://lh3.googleusercontent.com/d/${fileId}=w800`
+        ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`
         : "";
       if (rawCover) {
         console.log(`[doc ${r.id}] cover_url="${rawCover}" → "${coverUrl}"`);
