@@ -41,6 +41,8 @@ export function DocumentCard({
             src={doc.coverUrl}
             alt={doc.title}
             loading="lazy"
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
             onError={() => setImgError(true)}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] group-hover:scale-[1.05]"
           />

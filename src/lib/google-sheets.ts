@@ -189,6 +189,20 @@ function normalizeImageUrl(url: string): string {
   return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600`;
 }
 
+/**
+ * แปลง Drive URL → direct CDN URL (ข้าม redirect)
+ * ใช้เฉพาะสำหรับรูปที่ต้องแสดงบน mobile Safari (ที่ block redirect chain)
+ *
+ * lh3.googleusercontent.com/d/FILE_ID=wSIZE — direct static image URL
+ * ไม่มี redirect → iOS Safari โหลดได้ทุกครั้ง
+ */
+function toDirectImageUrl(url: string, size = 800): string {
+  if (!url) return "";
+  const match = url.match(/(?:\/d\/|[?&]id=)([a-zA-Z0-9_-]{20,})/);
+  if (!match) return url; // ไม่ใช่ Drive URL → return as-is
+  return `https://lh3.googleusercontent.com/d/${match[1]}=w${size}`;
+}
+
 function rowsToObjects(rows: string[][]): SheetRow[] {
   if (!rows || rows.length < 2) return [];
   const [header, ...body] = rows;
@@ -531,14 +545,17 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
         ? `https://drive.google.com/uc?export=download&id=${fileId}`
         : rawUrl;
 
-      // cover_url จากชีท → ถ้าไม่มี ใช้ Drive PDF thumbnail (หน้าแรก)
-      // Desktop โหลด lh3 ได้; mobile บางเครื่องล่ม → onError fallback → PDFIcon
+      // cover_url จากชีท → ใช้ lh3 direct URL (ข้าม redirect · ทำงาน mobile Safari)
+      // ถ้าว่างและมี file PDF → auto-thumbnail จาก fileId
       const rawCover = (r.cover_url ?? "").trim();
       const coverUrl = rawCover
-        ? normalizeImageUrl(rawCover)
+        ? toDirectImageUrl(rawCover, 800)
         : fileId
         ? `https://lh3.googleusercontent.com/d/${fileId}=w800`
         : "";
+      if (rawCover) {
+        console.log(`[doc ${r.id}] cover_url="${rawCover}" → "${coverUrl}"`);
+      }
 
       return {
         id: r.id,
