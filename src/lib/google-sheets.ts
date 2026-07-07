@@ -101,6 +101,41 @@ function extractFolderId(url: string): string | null {
 }
 
 const folderCache = new Map<string, string[]>();
+const thumbnailCache = new Map<string, string>();
+
+/**
+ * ดึง thumbnail URL ของไฟล์ PDF จาก Drive API
+ * → Google auto-generate thumbnail ตอน upload · เราแค่ query URL
+ * → รองรับทุกรูปแบบไฟล์ที่ Drive support (PDF, DOCX, XLSX, PPTX, ฯลฯ)
+ *
+ * คืน "" ถ้าดึงไม่ได้ (ไฟล์ไม่ public / thumbnail ยังไม่ generate / API error)
+ */
+async function getFileThumbnail(fileId: string): Promise<string> {
+  if (thumbnailCache.has(fileId)) return thumbnailCache.get(fileId)!;
+  try {
+    const drive = getDriveClient();
+    const res = await drive.files.get({
+      fileId,
+      fields: "id,name,thumbnailLink,mimeType",
+      supportsAllDrives: true,
+    });
+    const link = res.data.thumbnailLink ?? "";
+    // Upgrade size จาก default s220 (small) → s800 (medium/large)
+    const upgraded = link.replace(/=s\d+$/, "=s800").replace(/=w\d+/, "=w800");
+    console.log(
+      `[drive] thumbnail "${fileId}" (${res.data.mimeType}) → ${upgraded ? "✓" : "ว่าง"}`
+    );
+    thumbnailCache.set(fileId, upgraded);
+    return upgraded;
+  } catch (err) {
+    console.error(
+      `[drive] ดึง thumbnail "${fileId}" ล้มเหลว:`,
+      err instanceof Error ? err.message : err
+    );
+    thumbnailCache.set(fileId, ""); // cache fail เพื่อไม่ retry
+    return "";
+  }
+}
 
 async function listDriveFolderImages(folderId: string): Promise<string[]> {
   if (folderCache.has(folderId)) return folderCache.get(folderId)!;
@@ -532,10 +567,13 @@ export async function getHighlights(locale: Locale): Promise<HighlightItem[]> {
  */
 export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
   const rows = await getSheet("documents");
-  return rows
-    .filter((r) => (r.published ?? "TRUE").toUpperCase() !== "FALSE")
-    .map((r) => {
-      // แปลง Drive share URL → direct download URL + เก็บ file ID
+  const published = rows.filter(
+    (r) => (r.published ?? "TRUE").toUpperCase() !== "FALSE"
+  );
+
+  // ประมวลผลแบบ parallel — แต่ละ doc อาจ query Drive API เพื่อดึง thumbnail
+  const items = await Promise.all(
+    published.map(async (r) => {
       const rawUrl = (r.file_url ?? "").trim();
       const fileId =
         rawUrl.match(/\/d\/([^/]+)/)?.[1] ||
@@ -545,16 +583,17 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
         ? `https://drive.google.com/uc?export=download&id=${fileId}`
         : rawUrl;
 
-      // cover_url จากชีท → ใช้ lh3 direct CDN (ยืนยันแล้วว่า 200 OK, image/png · ทำงาน mobile Safari)
-      // drive.google.com/thumbnail คืน 302 redirect ที่ iOS block
+      // cover_url logic:
+      //   1. sheet มี cover_url → ใช้ lh3 direct (จาก user upload JPG/PNG)
+      //   2. sheet ว่าง + มี fileId → ดึง thumbnailLink จาก Drive API (auto PDF cover!)
+      //   3. ทั้ง 2 ว่าง → PDFIcon
       const rawCover = (r.cover_url ?? "").trim();
-      const coverUrl = rawCover
-        ? toDirectImageUrl(rawCover, 800)
-        : fileId
-        ? `https://lh3.googleusercontent.com/d/${fileId}=w800`
-        : "";
+      let coverUrl = "";
       if (rawCover) {
-        console.log(`[doc ${r.id}] cover_url="${rawCover}" → "${coverUrl}"`);
+        coverUrl = toDirectImageUrl(rawCover, 800);
+      } else if (fileId) {
+        // Drive API auto-generate thumbnail สำหรับทุก PDF · Doc · Sheet ฯลฯ
+        coverUrl = await getFileThumbnail(fileId);
       }
 
       return {
@@ -569,11 +608,13 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
         pinned: (r.pinned ?? "").toUpperCase() === "TRUE",
       };
     })
-    .sort((a, b) => {
-      if (a.pinned && !b.pinned) return -1;
-      if (!a.pinned && b.pinned) return 1;
-      return a.date < b.date ? 1 : -1;
-    });
+  );
+
+  return items.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return a.date < b.date ? 1 : -1;
+  });
 }
 
 /**
