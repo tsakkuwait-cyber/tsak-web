@@ -27,8 +27,15 @@ export function DocumentCard({
 
   const cardContent = (
     <>
-      <div className="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-brand-100 overflow-hidden">
-        {showImage ? (
+      <div
+        className="relative bg-gradient-to-br from-brand-50 to-brand-100 overflow-hidden"
+        style={{ aspectRatio: "4 / 3" }}
+      >
+        {/* Backdrop — PDFIcon ที่แสดงเสมอ · img (ถ้ามี) จะทับด้านบน */}
+        <div className="absolute inset-0 grid place-items-center">
+          <PDFIcon />
+        </div>
+        {showImage && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={doc.coverUrl}
@@ -37,10 +44,6 @@ export function DocumentCard({
             onError={() => setImgError(true)}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] group-hover:scale-[1.05]"
           />
-        ) : (
-          <div className="absolute inset-0 grid place-items-center">
-            <PDFIcon />
-          </div>
         )}
         {doc.category && (
           <span className="absolute top-2 start-2 sm:top-3 sm:start-3 inline-block bg-navy/85 backdrop-blur-sm px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10.5px] font-bold tracking-wider uppercase text-brand-200">
