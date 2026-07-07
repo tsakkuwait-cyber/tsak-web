@@ -365,6 +365,8 @@ export interface DocumentItem {
   category: string;
   title: string;
   description: string;
+  /** Drive file ID (แยกออกมา — ใช้สร้าง preview URL ในคอมโพเนนต์) */
+  fileId: string;
   /** URL ไฟล์ PDF ใน Drive (public share link) — จะแปลงเป็น direct-download อัตโนมัติ */
   fileUrl: string;
   /** URL รูปหน้าปก (optional — ถ้าไม่มี จะแสดง PDF icon) */
@@ -519,17 +521,21 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
   return rows
     .filter((r) => (r.published ?? "TRUE").toUpperCase() !== "FALSE")
     .map((r) => {
-      // แปลง Drive share URL → direct download URL
-      let fileUrl = (r.file_url ?? "").trim();
-      const fileId = fileUrl.match(/\/d\/([^/]+)/)?.[1] || fileUrl.match(/[?&]id=([^&]+)/)?.[1];
-      if (fileId) {
-        fileUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-      }
+      // แปลง Drive share URL → direct download URL + เก็บ file ID
+      const rawUrl = (r.file_url ?? "").trim();
+      const fileId =
+        rawUrl.match(/\/d\/([^/]+)/)?.[1] ||
+        rawUrl.match(/[?&]id=([^&]+)/)?.[1] ||
+        "";
+      const fileUrl = fileId
+        ? `https://drive.google.com/uc?export=download&id=${fileId}`
+        : rawUrl;
       return {
         id: r.id,
         category: r[`category_${locale}`] ?? r.category_th ?? r.category_en ?? r.category ?? "",
         title: r[`title_${locale}`] ?? r.title_th ?? r.title_en ?? "",
         description: r[`desc_${locale}`] ?? r.desc_th ?? r.desc_en ?? "",
+        fileId,
         fileUrl,
         coverUrl: normalizeImageUrl(r.cover_url ?? ""),
         date: r.date ?? "",

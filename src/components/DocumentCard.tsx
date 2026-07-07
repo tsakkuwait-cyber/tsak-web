@@ -1,17 +1,25 @@
 import type { DocumentItem } from "@/lib/google-sheets";
+import { DocumentPreview } from "./DocumentPreview";
 
 /**
- * DocumentCard — reusable card สำหรับหน้า /resources และ Home preview section
+ * DocumentCard — reusable card สำหรับ /resources และ Home preview
+ *   Primary action: Preview (opens Drive viewer in modal — รองรับชื่อไทย)
+ *   Secondary action: Download (direct link ถ้าอยากดาวน์โหลดตรง)
  */
 export function DocumentCard({
   doc,
   labels,
 }: {
   doc: DocumentItem;
-  labels: { downloadLabel: string; pinnedLabel?: string };
+  labels: {
+    downloadLabel: string;
+    previewLabel: string;
+    closeLabel: string;
+    pinnedLabel?: string;
+  };
 }) {
-  return (
-    <article className="group relative flex flex-col border border-line bg-white overflow-hidden transition-all duration-300 hover:border-brand hover:shadow-soft hover:-translate-y-0.5">
+  const cardContent = (
+    <>
       <div className="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-brand-100 overflow-hidden">
         {doc.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -40,9 +48,19 @@ export function DocumentCard({
             {labels.pinnedLabel}
           </span>
         )}
+        {/* Hover overlay hint — "click to preview" */}
+        <div className="absolute inset-0 bg-navy/0 group-hover:bg-navy/40 transition-colors duration-300 grid place-items-center opacity-0 group-hover:opacity-100">
+          <span className="inline-flex items-center gap-2 bg-white text-navy px-4 py-2 text-[12.5px] font-bold shadow-lg">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            {labels.previewLabel}
+          </span>
+        </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
+      <div className="flex flex-1 flex-col p-4 sm:p-5 text-start">
         <h3 className="text-[15px] sm:text-[16.5px] font-bold leading-snug text-navy line-clamp-2">
           {doc.title}
         </h3>
@@ -61,7 +79,8 @@ export function DocumentCard({
             href={doc.fileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[12.5px] font-bold text-brand hover:text-brand-600 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1.5 text-[12.5px] font-bold text-brand hover:text-brand-600 transition-colors z-[2] relative"
           >
             <svg
               width="14"
@@ -79,6 +98,31 @@ export function DocumentCard({
           </a>
         </div>
       </div>
+    </>
+  );
+
+  // ถ้ามี fileId → wrap ทั้งการ์ดด้วย preview button (คลิกที่ไหนก็เปิด modal)
+  if (doc.fileId) {
+    return (
+      <article className="group relative flex flex-col border border-line bg-white overflow-hidden transition-all duration-300 hover:border-brand hover:shadow-soft hover:-translate-y-0.5">
+        <DocumentPreview
+          doc={doc}
+          labels={{
+            previewLabel: labels.previewLabel,
+            downloadLabel: labels.downloadLabel,
+            closeLabel: labels.closeLabel,
+          }}
+          triggerClassName="flex flex-col text-start w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          triggerContent={cardContent}
+        />
+      </article>
+    );
+  }
+
+  // Fallback — ไม่มี fileId ให้แสดงเป็น card ธรรมดา
+  return (
+    <article className="group relative flex flex-col border border-line bg-white overflow-hidden transition-all duration-300 hover:border-brand hover:shadow-soft hover:-translate-y-0.5">
+      {cardContent}
     </article>
   );
 }

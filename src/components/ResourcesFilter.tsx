@@ -14,6 +14,8 @@ export function ResourcesFilter({
   labels: {
     filterAll: string;
     downloadLabel: string;
+    previewLabel: string;
+    closeLabel: string;
     pinnedLabel: string;
     searchPlaceholder: string;
     noMatch: string;
@@ -125,6 +127,8 @@ export function ResourcesFilter({
               doc={doc}
               labels={{
                 downloadLabel: labels.downloadLabel,
+                previewLabel: labels.previewLabel,
+                closeLabel: labels.closeLabel,
                 pinnedLabel: labels.pinnedLabel,
               }}
             />
