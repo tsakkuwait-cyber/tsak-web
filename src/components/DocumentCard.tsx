@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { DocumentItem } from "@/lib/google-sheets";
 import { DocumentPreview } from "./DocumentPreview";
 
@@ -20,16 +21,33 @@ export function DocumentCard({
     pinnedLabel?: string;
   };
 }) {
+  const [imgError, setImgError] = useState(false);
+  const [triedFallback, setTriedFallback] = useState(false);
+  // ถ้า lh3 ล่ม → fallback ไป drive.google.com/thumbnail; ถ้าล่มอีก → PDFIcon
+  const primarySrc = doc.coverUrl;
+  const fallbackSrc = doc.fileId
+    ? `https://drive.google.com/thumbnail?id=${doc.fileId}&sz=w800`
+    : "";
+  const currentSrc = triedFallback ? fallbackSrc : primarySrc;
+  const showImage = currentSrc && !imgError;
+
   const cardContent = (
     <>
       <div className="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-brand-100 overflow-hidden">
-        {doc.coverUrl ? (
+        {showImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={doc.coverUrl}
+            src={currentSrc}
             alt={doc.title}
             referrerPolicy="no-referrer"
             loading="lazy"
+            onError={() => {
+              if (!triedFallback && fallbackSrc && fallbackSrc !== primarySrc) {
+                setTriedFallback(true);
+              } else {
+                setImgError(true);
+              }
+            }}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] group-hover:scale-[1.05]"
           />
         ) : (
