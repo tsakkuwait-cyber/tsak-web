@@ -4,11 +4,9 @@ import type { DocumentItem } from "@/lib/google-sheets";
 import { DocumentPreview } from "./DocumentPreview";
 
 /**
- * DocumentCard — reusable card สำหรับ /resources และ Home preview
- *   Mobile: horizontal (thumb 100px + text) — compact
- *   Desktop: vertical (aspect 4:3 cover + full text below)
- *   Primary action: Preview (opens Drive viewer in modal)
- *   Secondary action: Download (direct link)
+ * DocumentCard — vertical card (cover ด้านบน + text ด้านล่าง)
+ *   Mobile: ใช้ grid-cols-2 จากภายนอก → การ์ดเล็กลงครึ่งหนึ่ง
+ *   Primary action: Preview modal · Secondary: Download
  */
 export function DocumentCard({
   doc,
@@ -24,8 +22,7 @@ export function DocumentCard({
 }) {
   const cardContent = (
     <>
-      {/* COVER — mobile square 100px · sm+ aspect 4:3 full-width */}
-      <div className="relative flex-none w-[100px] aspect-square sm:w-full sm:aspect-[4/3] bg-gradient-to-br from-brand-50 to-brand-100 overflow-hidden">
+      <div className="relative aspect-[4/3] bg-gradient-to-br from-brand-50 to-brand-100 overflow-hidden">
         {doc.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -41,19 +38,19 @@ export function DocumentCard({
           </div>
         )}
         {doc.category && (
-          <span className="absolute top-1.5 start-1.5 sm:top-3 sm:start-3 inline-block bg-navy/85 backdrop-blur-sm px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10.5px] font-bold tracking-wider uppercase text-brand-200">
+          <span className="absolute top-2 start-2 sm:top-3 sm:start-3 inline-block bg-navy/85 backdrop-blur-sm px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10.5px] font-bold tracking-wider uppercase text-brand-200">
             {doc.category}
           </span>
         )}
         {doc.pinned && labels.pinnedLabel && (
-          <span className="absolute top-1.5 end-1.5 sm:top-3 sm:end-3 inline-flex items-center gap-1 bg-brand text-white px-1.5 py-0.5 text-[9px] sm:text-[10.5px] font-bold">
+          <span className="absolute top-2 end-2 sm:top-3 sm:end-3 inline-flex items-center gap-1 bg-brand text-white px-1.5 py-0.5 text-[9px] sm:text-[10.5px] font-bold">
             <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1 3-6z" />
             </svg>
             <span className="hidden sm:inline">{labels.pinnedLabel}</span>
           </span>
         )}
-        {/* Hover overlay hint — desktop only */}
+        {/* Hover overlay — desktop only */}
         <div className="hidden sm:grid absolute inset-0 bg-navy/0 group-hover:bg-navy/40 transition-colors duration-300 place-items-center opacity-0 group-hover:opacity-100">
           <span className="inline-flex items-center gap-2 bg-white text-navy px-4 py-2 text-[12.5px] font-bold shadow-lg">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -65,9 +62,8 @@ export function DocumentCard({
         </div>
       </div>
 
-      {/* BODY — compact mobile padding · full sm+ */}
       <div className="flex flex-1 flex-col p-3 sm:p-5 text-start min-w-0">
-        <h3 className="text-[13.5px] sm:text-[16.5px] font-bold leading-snug text-navy line-clamp-2">
+        <h3 className="text-[13px] sm:text-[16.5px] font-bold leading-snug text-navy line-clamp-2">
           {doc.title}
         </h3>
         {doc.description && (
@@ -77,7 +73,7 @@ export function DocumentCard({
         )}
         <div className="mt-2 sm:mt-4 flex items-center justify-between gap-2">
           {doc.date && (
-            <time className="font-display text-[10.5px] sm:text-[11.5px] font-bold text-ink-subtle">
+            <time className="font-display text-[10px] sm:text-[11.5px] font-bold text-ink-subtle">
               {doc.date}
             </time>
           )}
@@ -86,11 +82,11 @@ export function DocumentCard({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-[12.5px] font-bold text-brand hover:text-brand-600 transition-colors z-[2] relative whitespace-nowrap"
+            className="inline-flex items-center gap-1 sm:gap-1.5 text-[10.5px] sm:text-[12.5px] font-bold text-brand hover:text-brand-600 transition-colors z-[2] relative whitespace-nowrap"
           >
             <svg
-              width="12"
-              height="12"
+              width="11"
+              height="11"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -108,10 +104,9 @@ export function DocumentCard({
     </>
   );
 
-  // ถ้ามี fileId → wrap ทั้งการ์ดด้วย preview button
   if (doc.fileId) {
     return (
-      <article className="group relative flex flex-row sm:flex-col border border-line bg-white overflow-hidden transition-all duration-300 hover:border-brand hover:shadow-soft hover:-translate-y-0.5">
+      <article className="group relative flex flex-col border border-line bg-white overflow-hidden transition-all duration-300 hover:border-brand hover:shadow-soft hover:-translate-y-0.5">
         <DocumentPreview
           doc={doc}
           labels={{
@@ -119,16 +114,15 @@ export function DocumentCard({
             downloadLabel: labels.downloadLabel,
             closeLabel: labels.closeLabel,
           }}
-          triggerClassName="flex flex-row sm:flex-col text-start w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          triggerClassName="flex flex-col text-start w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           triggerContent={cardContent}
         />
       </article>
     );
   }
 
-  // Fallback — ไม่มี fileId
   return (
-    <article className="group relative flex flex-row sm:flex-col border border-line bg-white overflow-hidden transition-all duration-300 hover:border-brand hover:shadow-soft hover:-translate-y-0.5">
+    <article className="group relative flex flex-col border border-line bg-white overflow-hidden transition-all duration-300 hover:border-brand hover:shadow-soft hover:-translate-y-0.5">
       {cardContent}
     </article>
   );

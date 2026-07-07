@@ -540,7 +540,7 @@ export default async function HomePage({
             <p className="mb-8 max-w-[62ch] text-[14.5px] leading-[1.8] text-ink-soft">
               {(dict.resources as Record<string, string>).homeSectionIntro}
             </p>
-            <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:gap-6 grid-cols-2 lg:grid-cols-3">
               {homeDocuments.map((doc) => (
                 <DocumentCard
                   key={doc.id}
