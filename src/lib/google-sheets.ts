@@ -532,11 +532,12 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
         : rawUrl;
 
       // cover_url จากชีท → ถ้าไม่มี fallback ไป Drive PDF thumbnail (หน้าแรก)
+      // ใช้ lh3.googleusercontent.com — CDN static ไม่มี redirect (โหลดได้ในทุก browser รวม mobile)
       const rawCover = (r.cover_url ?? "").trim();
       const coverUrl = rawCover
         ? normalizeImageUrl(rawCover)
         : fileId
-        ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`
+        ? `https://lh3.googleusercontent.com/d/${fileId}=w800`
         : "";
 
       return {
