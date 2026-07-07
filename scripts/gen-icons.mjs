@@ -33,13 +33,20 @@ const jobs = [
   { name: "apple-icon.png", size: 180 },
 ];
 
+// Step 1: ตัดขอบขาวออก (trim) ก่อน แล้วค่อย resize
+// - threshold: 5 = ตรวจจับขาว/เกือบขาวรอบขอบและตัดทิ้ง
+// - background transparent = พื้นหลังโปร่งใส (ไม่มีขาวรอบโลโก้)
 for (const { name, size } of jobs) {
   const out = join(appDir, name);
   await sharp(src)
-    .resize(size, size, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 1 } })
+    .trim({ background: "#ffffff", threshold: 15 })
+    .resize(size, size, {
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 }, // โปร่งใส
+    })
     .png({ compressionLevel: 9 })
     .toFile(out);
-  console.log(`✅ ${name} (${size}×${size})`);
+  console.log(`✅ ${name} (${size}×${size}) — trimmed + transparent`);
 }
 
 console.log(`\n🎉 เสร็จ! Next.js จะใช้ไอคอนพวกนี้เป็น favicon อัตโนมัติ`);
