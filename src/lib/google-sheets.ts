@@ -532,12 +532,13 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
         : rawUrl;
 
       // cover_url จากชีท → ถ้าไม่มี fallback ไป Drive PDF thumbnail (หน้าแรก)
-      // ใช้ lh3.googleusercontent.com — CDN static ไม่มี redirect (โหลดได้ในทุก browser รวม mobile)
+      // ใช้ API proxy `/api/drive-image` — server-side fetch แล้ว serve จาก domain เรา
+      // → แก้ปัญหา Safari iOS block รูปจาก Drive ตรงๆ
       const rawCover = (r.cover_url ?? "").trim();
       const coverUrl = rawCover
         ? normalizeImageUrl(rawCover)
         : fileId
-        ? `https://lh3.googleusercontent.com/d/${fileId}=w800`
+        ? `/api/drive-image?id=${fileId}&sz=w800`
         : "";
 
       return {

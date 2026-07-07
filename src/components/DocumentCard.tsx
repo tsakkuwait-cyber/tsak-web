@@ -22,14 +22,8 @@ export function DocumentCard({
   };
 }) {
   const [imgError, setImgError] = useState(false);
-  const [triedFallback, setTriedFallback] = useState(false);
-  // ถ้า lh3 ล่ม → fallback ไป drive.google.com/thumbnail; ถ้าล่มอีก → PDFIcon
-  const primarySrc = doc.coverUrl;
-  const fallbackSrc = doc.fileId
-    ? `https://drive.google.com/thumbnail?id=${doc.fileId}&sz=w800`
-    : "";
-  const currentSrc = triedFallback ? fallbackSrc : primarySrc;
-  const showImage = currentSrc && !imgError;
+  // API proxy จัดการ fallback chain ภายใน — ถ้า proxy คืน 404 → แสดง PDFIcon
+  const showImage = doc.coverUrl && !imgError;
 
   const cardContent = (
     <>
@@ -37,17 +31,10 @@ export function DocumentCard({
         {showImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={currentSrc}
+            src={doc.coverUrl}
             alt={doc.title}
-            referrerPolicy="no-referrer"
             loading="lazy"
-            onError={() => {
-              if (!triedFallback && fallbackSrc && fallbackSrc !== primarySrc) {
-                setTriedFallback(true);
-              } else {
-                setImgError(true);
-              }
-            }}
+            onError={() => setImgError(true)}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] group-hover:scale-[1.05]"
           />
         ) : (
