@@ -530,6 +530,15 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
       const fileUrl = fileId
         ? `https://drive.google.com/uc?export=download&id=${fileId}`
         : rawUrl;
+
+      // cover_url จากชีท → ถ้าไม่มี fallback ไป Drive PDF thumbnail (หน้าแรก)
+      const rawCover = (r.cover_url ?? "").trim();
+      const coverUrl = rawCover
+        ? normalizeImageUrl(rawCover)
+        : fileId
+        ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`
+        : "";
+
       return {
         id: r.id,
         category: r[`category_${locale}`] ?? r.category_th ?? r.category_en ?? r.category ?? "",
@@ -537,7 +546,7 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
         description: r[`desc_${locale}`] ?? r.desc_th ?? r.desc_en ?? "",
         fileId,
         fileUrl,
-        coverUrl: normalizeImageUrl(r.cover_url ?? ""),
+        coverUrl,
         date: r.date ?? "",
         pinned: (r.pinned ?? "").toUpperCase() === "TRUE",
       };
