@@ -6,8 +6,10 @@ import { DocumentPreview } from "./DocumentPreview";
 
 /**
  * DocumentCard — vertical card (cover ด้านบน + text ด้านล่าง)
- *   Mobile: ใช้ grid-cols-2 จากภายนอก → การ์ดเล็กลงครึ่งหนึ่ง
- *   Primary action: Preview modal · Secondary: Download
+ *   3 cases:
+ *     1. Drive PDF (มี fileId) → คลิก card → preview modal + ปุ่ม download
+ *     2. External link (fileUrl แต่ไม่มี fileId) → คลิก card → เปิด link ใน tab ใหม่
+ *     3. ไม่มี URL → static card
  */
 export function DocumentCard({
   doc,
@@ -18,12 +20,14 @@ export function DocumentCard({
     downloadLabel: string;
     previewLabel: string;
     closeLabel: string;
+    openLinkLabel: string;
     pinnedLabel?: string;
   };
 }) {
   const [imgError, setImgError] = useState(false);
-  // API proxy จัดการ fallback chain ภายใน — ถ้า proxy คืน 404 → แสดง PDFIcon
   const showImage = doc.coverUrl && !imgError;
+  const isExternalLink = !doc.fileId && !!doc.fileUrl;
+  const actionLabel = isExternalLink ? labels.openLinkLabel : labels.downloadLabel;
 
   const cardContent = (
     <>
@@ -31,9 +35,9 @@ export function DocumentCard({
         className="relative bg-gradient-to-br from-brand-50 to-brand-100 overflow-hidden"
         style={{ aspectRatio: "4 / 3" }}
       >
-        {/* Backdrop — PDFIcon ที่แสดงเสมอ · img (ถ้ามี) จะทับด้านบน */}
+        {/* Backdrop — Icon ที่แสดงเสมอ · img (ถ้ามี) จะทับด้านบน */}
         <div className="absolute inset-0 grid place-items-center">
-          <PDFIcon />
+          {isExternalLink ? <LinkIcon /> : <PDFIcon />}
         </div>
         {showImage && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -62,11 +66,17 @@ export function DocumentCard({
         {/* Hover overlay — desktop only */}
         <div className="hidden sm:grid absolute inset-0 bg-navy/0 group-hover:bg-navy/40 transition-colors duration-300 place-items-center opacity-0 group-hover:opacity-100">
           <span className="inline-flex items-center gap-2 bg-white text-navy px-4 py-2 text-[12.5px] font-bold shadow-lg">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            {labels.previewLabel}
+            {isExternalLink ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h6v6M10 14L21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            )}
+            {isExternalLink ? labels.openLinkLabel : labels.previewLabel}
           </span>
         </div>
       </div>
@@ -93,26 +103,43 @@ export function DocumentCard({
             onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center gap-1 sm:gap-1.5 text-[10.5px] sm:text-[12.5px] font-bold text-brand hover:text-brand-600 transition-colors z-[2] relative whitespace-nowrap"
           >
-            <svg
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="sm:w-[14px] sm:h-[14px]"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-            </svg>
-            {labels.downloadLabel}
+            {isExternalLink ? (
+              <svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="sm:w-[14px] sm:h-[14px]"
+              >
+                <path d="M15 3h6v6M10 14L21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              </svg>
+            ) : (
+              <svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="sm:w-[14px] sm:h-[14px]"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+              </svg>
+            )}
+            {actionLabel}
           </a>
         </div>
       </div>
     </>
   );
 
+  // Case 1: Drive PDF → click card → preview modal
   if (doc.fileId) {
     return (
       <article className="group relative flex flex-col border border-line bg-white overflow-hidden transition-all duration-300 hover:border-brand hover:shadow-soft hover:-translate-y-0.5">
@@ -130,10 +157,44 @@ export function DocumentCard({
     );
   }
 
+  // Case 2: External link → click card → open in new tab
+  if (isExternalLink) {
+    return (
+      <a
+        href={doc.fileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group relative flex flex-col border border-line bg-white overflow-hidden transition-all duration-300 hover:border-brand hover:shadow-soft hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+      >
+        {cardContent}
+      </a>
+    );
+  }
+
+  // Case 3: No URL → static card (fallback, shouldn't happen normally)
   return (
     <article className="group relative flex flex-col border border-line bg-white overflow-hidden transition-all duration-300 hover:border-brand hover:shadow-soft hover:-translate-y-0.5">
       {cardContent}
     </article>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-brand/60 sm:w-[72px] sm:h-[72px]"
+    >
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
   );
 }
 

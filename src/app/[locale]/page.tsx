@@ -548,6 +548,7 @@ export default async function HomePage({
                   labels={{
                     downloadLabel: (dict.resources as Record<string, string>).downloadLabel,
                     previewLabel: (dict.resources as Record<string, string>).previewLabel,
+                    openLinkLabel: (dict.resources as Record<string, string>).openLinkLabel,
                     closeLabel: (dict.resources as Record<string, string>).closeLabel,
                     pinnedLabel: (dict.resources as Record<string, string>).pinnedLabel,
                   }}

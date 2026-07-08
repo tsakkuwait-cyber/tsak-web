@@ -97,6 +97,7 @@
     "noItems": "No documents yet",
     "downloadLabel": "Download",
     "openLabel": "Open",
+    "openLinkLabel": "Open Link",
     "previewLabel": "Preview",
     "closeLabel": "Close",
     "pinnedLabel": "Pinned",

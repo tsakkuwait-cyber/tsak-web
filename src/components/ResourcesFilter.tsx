@@ -15,6 +15,7 @@ export function ResourcesFilter({
     filterAll: string;
     downloadLabel: string;
     previewLabel: string;
+    openLinkLabel: string;
     closeLabel: string;
     pinnedLabel: string;
     searchPlaceholder: string;
@@ -128,6 +129,7 @@ export function ResourcesFilter({
               labels={{
                 downloadLabel: labels.downloadLabel,
                 previewLabel: labels.previewLabel,
+                openLinkLabel: labels.openLinkLabel,
                 closeLabel: labels.closeLabel,
                 pinnedLabel: labels.pinnedLabel,
               }}

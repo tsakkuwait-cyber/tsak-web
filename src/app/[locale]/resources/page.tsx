@@ -75,6 +75,7 @@ export default async function ResourcesPage({
               filterAll: r.filterAll,
               downloadLabel: r.downloadLabel,
               previewLabel: r.previewLabel,
+              openLinkLabel: r.openLinkLabel,
               closeLabel: r.closeLabel,
               pinnedLabel: r.pinnedLabel,
               searchPlaceholder: r.searchPlaceholder,
