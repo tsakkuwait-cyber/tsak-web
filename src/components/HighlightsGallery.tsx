@@ -216,6 +216,11 @@ export function HighlightsGallery({
                     {openGroup.cover.institution}
                     {openGroup.cover.year && ` · ${openGroup.cover.year}`}
                   </div>
+                  {openGroup.cover.name && (
+                    <div className="mt-1 text-[13.5px] font-semibold text-white">
+                      {openGroup.cover.name}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
