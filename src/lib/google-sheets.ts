@@ -101,41 +101,6 @@ function extractFolderId(url: string): string | null {
 }
 
 const folderCache = new Map<string, string[]>();
-const thumbnailCache = new Map<string, string>();
-
-/**
- * ดึง thumbnail URL ของไฟล์ PDF จาก Drive API
- * → Google auto-generate thumbnail ตอน upload · เราแค่ query URL
- * → รองรับทุกรูปแบบไฟล์ที่ Drive support (PDF, DOCX, XLSX, PPTX, ฯลฯ)
- *
- * คืน "" ถ้าดึงไม่ได้ (ไฟล์ไม่ public / thumbnail ยังไม่ generate / API error)
- */
-async function getFileThumbnail(fileId: string): Promise<string> {
-  if (thumbnailCache.has(fileId)) return thumbnailCache.get(fileId)!;
-  try {
-    const drive = getDriveClient();
-    const res = await drive.files.get({
-      fileId,
-      fields: "id,name,thumbnailLink,mimeType",
-      supportsAllDrives: true,
-    });
-    const link = res.data.thumbnailLink ?? "";
-    // Upgrade size จาก default s220 (small) → s800 (medium/large)
-    const upgraded = link.replace(/=s\d+$/, "=s800").replace(/=w\d+/, "=w800");
-    console.log(
-      `[drive] thumbnail "${fileId}" (${res.data.mimeType}) → ${upgraded ? "✓" : "ว่าง"}`
-    );
-    thumbnailCache.set(fileId, upgraded);
-    return upgraded;
-  } catch (err) {
-    console.error(
-      `[drive] ดึง thumbnail "${fileId}" ล้มเหลว:`,
-      err instanceof Error ? err.message : err
-    );
-    thumbnailCache.set(fileId, ""); // cache fail เพื่อไม่ retry
-    return "";
-  }
-}
 
 async function listDriveFolderImages(folderId: string): Promise<string[]> {
   if (folderCache.has(folderId)) return folderCache.get(folderId)!;
@@ -151,10 +116,12 @@ async function listDriveFolderImages(folderId: string): Promise<string[]> {
       includeItemsFromAllDrives: true,
     });
     const files = res.data.files ?? [];
-    console.log(
-      `[drive] folder "${folderId}" → พบ ${files.length} รูป`,
-      files.slice(0, 3).map((f) => f.name)
-    );
+    if (process.env.NODE_ENV !== "production") {
+      console.log(
+        `[drive] folder "${folderId}" → พบ ${files.length} รูป`,
+        files.slice(0, 3).map((f) => f.name)
+      );
+    }
     // ใช้ thumbnail URL — เสถียรกว่า lh3 สำหรับไฟล์ที่ shared แบบ Anyone with link
     const urls = files
       .filter((f) => f.id)
@@ -182,18 +149,15 @@ async function expandImageUrls(raw: string): Promise<string[]> {
     .split(/[,\n]/)
     .map((s) => s.trim())
     .filter(Boolean);
-  const out: string[] = [];
-  for (const p of parts) {
-    const folderId = extractFolderId(p);
-    if (folderId) {
-      const folderImgs = await listDriveFolderImages(folderId);
-      out.push(...folderImgs);
-    } else {
+  const results = await Promise.all(
+    parts.map(async (p) => {
+      const folderId = extractFolderId(p);
+      if (folderId) return listDriveFolderImages(folderId);
       const normalized = normalizeImageUrl(p);
-      if (normalized) out.push(normalized);
-    }
-  }
-  return out;
+      return normalized ? [normalized] : [];
+    })
+  );
+  return results.flat();
 }
 
 // ---------------------------------------------------------------
@@ -589,9 +553,11 @@ export async function getDocuments(locale: Locale): Promise<DocumentItem[]> {
         : fileId
         ? `https://lh3.googleusercontent.com/d/${fileId}=w800`
         : "";
-      console.log(
-        `[doc ${r.id}] file=${fileId ? fileId.slice(0, 8) + "..." : "—"} cover=${coverUrl ? "✓ " + coverUrl.slice(0, 60) : "PDFIcon"}`
-      );
+      if (process.env.NODE_ENV !== "production") {
+        console.log(
+          `[doc ${r.id}] file=${fileId ? fileId.slice(0, 8) + "..." : "—"} cover=${coverUrl ? "✓ " + coverUrl.slice(0, 60) : "PDFIcon"}`
+        );
+      }
 
       return {
         id: r.id,
@@ -664,7 +630,7 @@ export async function getActivities(locale: Locale): Promise<ActivityItem[]> {
       ) {
         audience = "female";
       }
-      if (audRaw && audience === "all" && !audRaw.includes("all") && !audRaw.includes("ทุก") && !audRaw.includes("every")) {
+      if (process.env.NODE_ENV !== "production" && audRaw && audience === "all" && !audRaw.includes("all") && !audRaw.includes("ทุก") && !audRaw.includes("every")) {
         console.log(`[activity ${r.id}] audience="${r.audience}" ไม่ match → ใช้ default 'all'`);
       }
 
