@@ -86,7 +86,7 @@ export function DocumentCard({
           {doc.title}
         </h3>
         {doc.description && (
-          <p className="mt-1.5 sm:mt-2 flex-1 text-[11.5px] sm:text-[13px] leading-relaxed text-ink-soft line-clamp-2 sm:line-clamp-3">
+          <p className="mt-1.5 sm:mt-2 flex-1 text-[11.5px] sm:text-[13px] leading-relaxed text-ink-soft">
             {doc.description}
           </p>
         )}
