@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -8,8 +9,24 @@ import {
   getHighlights,
   type HighlightType,
 } from "@/lib/google-sheets";
+import { localeAlternates } from "@/lib/site";
 import { InstitutionCard } from "@/components/InstitutionCard";
 import { HighlightsGallery } from "@/components/HighlightsGallery";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  if (!isLocale(params.locale)) return {};
+  const dict = await getDictionary(params.locale);
+  const s = dict.students as Record<string, string>;
+  return {
+    title: s.title,
+    description: s.intro,
+    alternates: localeAlternates(params.locale, "/students"),
+  };
+}
 
 /**
  * Our Community page

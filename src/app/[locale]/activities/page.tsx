@@ -1,8 +1,25 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getActivities, type ActivityItem } from "@/lib/google-sheets";
+import { localeAlternates } from "@/lib/site";
 import { ActivityCard } from "@/components/ActivityCard";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  if (!isLocale(params.locale)) return {};
+  const dict = await getDictionary(params.locale);
+  const a = dict.activities as Record<string, string>;
+  return {
+    title: a.title,
+    description: a.intro,
+    alternates: localeAlternates(params.locale, "/activities"),
+  };
+}
 
 /**
  * Activities — image-focused grid (เน้นรูป) + audience tag chip

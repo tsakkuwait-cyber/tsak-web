@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -6,7 +7,23 @@ import {
   getChannels,
   type CouncilMember,
 } from "@/lib/google-sheets";
+import { localeAlternates } from "@/lib/site";
 import { ChannelIcon } from "@/components/ChannelIcon";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  if (!isLocale(params.locale)) return {};
+  const dict = await getDictionary(params.locale);
+  const c = dict.contact as Record<string, string>;
+  return {
+    title: c.title,
+    description: c.intro,
+    alternates: localeAlternates(params.locale, "/contact"),
+  };
+}
 
 /**
  * Contact — Council redesigned

@@ -14,6 +14,7 @@ import {
 } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getChannels } from "@/lib/google-sheets";
+import { siteUrl, absoluteUrl, ogLocales, localeAlternates } from "@/lib/site";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ComingSoon } from "@/components/ComingSoon";
@@ -63,10 +64,37 @@ export async function generateMetadata({
   params: { locale: string };
 }): Promise<Metadata> {
   if (!isLocale(params.locale)) return {};
-  const dict = await getDictionary(params.locale);
+  const locale: Locale = params.locale;
+  const dict = await getDictionary(locale);
+  const isComingSoon = process.env.NEXT_PUBLIC_SITE_STATUS === "coming_soon";
+
   return {
-    title: dict.meta.title,
+    metadataBase: new URL(siteUrl),
+    // "%s · TSAK" — หน้าย่อยตั้ง title เองแล้วต่อท้ายด้วยชื่อชมรม
+    title: {
+      default: dict.meta.title,
+      template: `%s · ${dict.brand.shortLabel ?? "TSAK"}`,
+    },
     description: dict.meta.description,
+    applicationName: dict.brand.name,
+    alternates: localeAlternates(locale),
+    // ถ้าอยู่ coming-soon → ห้าม index (กัน Google เก็บหน้า splash)
+    robots: isComingSoon
+      ? { index: false, follow: false }
+      : { index: true, follow: true },
+    openGraph: {
+      type: "website",
+      siteName: dict.brand.name,
+      title: dict.meta.title,
+      description: dict.meta.description,
+      url: absoluteUrl(`/${locale}`),
+      locale: ogLocales[locale],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: dict.meta.title,
+      description: dict.meta.description,
+    },
   };
 }
 
@@ -108,6 +136,19 @@ export default async function LocaleLayout({
   const isComingSoon =
     process.env.NEXT_PUBLIC_SITE_STATUS === "coming_soon" && !hasPreviewCookie;
 
+  // JSON-LD (Organization) — ช่วยให้ Google แสดงชื่อ/โลโก้ชมรมใน search result
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: dict.brand.name,
+    alternateName: dict.brand.shortLabel,
+    description: dict.meta.description,
+    url: absoluteUrl(`/${locale}`),
+    logo: absoluteUrl("/logo.jpg"),
+    email: "info@thaikuwait.org",
+    areaServed: "KW",
+  };
+
   return (
     <html
       lang={locale}
@@ -116,6 +157,12 @@ export default async function LocaleLayout({
       style={{ ["--font-active" as string]: activeFontVar }}
     >
       <body className="min-h-screen flex flex-col">
+        {!isComingSoon && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+          />
+        )}
         {isComingSoon ? (
           <ComingSoon locale={locale} dict={dict} />
         ) : (

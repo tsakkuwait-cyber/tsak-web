@@ -1,8 +1,25 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getDocuments } from "@/lib/google-sheets";
+import { localeAlternates } from "@/lib/site";
 import { ResourcesFilter } from "@/components/ResourcesFilter";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  if (!isLocale(params.locale)) return {};
+  const dict = await getDictionary(params.locale);
+  const r = dict.resources as Record<string, string>;
+  return {
+    title: r.title,
+    description: r.intro,
+    alternates: localeAlternates(params.locale, "/resources"),
+  };
+}
 
 /**
  * Resources page — คลังเอกสาร
